@@ -1,99 +1,63 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+    :root {
+        /* 測試用：背景改為純白色 */
+        --test-bg: #ffffff;
+        --dock-debug-color: rgba(255, 0, 0, 0.3); /* 紅色透明，方便看 Dock 範圍 */
+    }
 
-    <style>
-        :root {
-            /* 在這裡填入你的桌布 Base64 */
-            --wallpaper: url('data:image/png;base64,你的桌布資料');
-        }
+    * { box-sizing: border-box; }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body, html {
+        margin: 0; padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        position: fixed;
+        /* 改為白色背景 */
+        background-color: var(--test-bg);
+    }
 
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%;
-            height: 100%;
-            /* 鎖定視窗高度，防止橡皮筋回彈效果 */
-            overflow: hidden; 
-            position: fixed; 
-            background: #000 var(--wallpaper) no-repeat center center / cover;
-        }
+    /* 頂部空間 */
+    .top-spacer {
+        height: calc(50px + env(safe-area-inset-top));
+        background-color: #f0f0f0; /* 淺灰色標示頂部區域 */
+    }
 
-        /* 1. 頂部空間：避開真正的時間訊號列 */
-        .top-spacer {
-            height: calc(50px + env(safe-area-inset-top));
-            width: 100%;
-        }
+    /* App 網格 */
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-gap: 25px 15px;
+        padding: 10px 25px;
+    }
 
-        /* 2. 圖示網格：適度下移 */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-gap: 25px 15px;
-            padding: 10px 25px;
-        }
+    .icon {
+        width: 60px; height: 60px;
+        border-radius: 14px;
+        background-color: #ddd; /* 灰色佔位圖示 */
+    }
 
-        .icon {
-            width: 60px; height: 60px;
-            border-radius: 14px;
-            background-color: rgba(255,255,255,0.1);
-            background-size: cover;
-            margin: 0 auto 5px;
-        }
-
-        .label {
-            color: #fff; font-size: 11px; font-weight: 500;
-            text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
-
-        /* 3. [關鍵修正]：Dock 欄必須強行突破 Safe Area */
-        .dock-container {
-            position: absolute;
-            /* 關鍵：設為 0 會留縫隙，設為負值或配合 padding 延伸 */
-            bottom: 0; 
-            left: 0;
-            width: 100%;
-            /* 增加高度，使其延伸到螢幕物理邊緣之外 */
-            height: calc(95px + env(safe-area-inset-bottom)); 
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            padding: 18px 25px 0; /* 頂部留白，底部不留 */
-            
-            /* 確保背景色塗滿整個底部，包含 Home Bar 區域 */
-            border-top: 0.3px solid rgba(255,255,255,0.2);
-        }
-
-        /* 移除之前手畫的 Home Bar，因為 PWA 會自帶一條細細的白線/黑線 */
-    </style>
-</head>
-<body>
-    <div class="top-spacer"></div>
-    <div class="grid" id="homeGrid"></div>
-    
-    <div class="dock-container" id="dockBar"></div>
-
-    <script>
-        // 自動生成圖示的邏輯 (可隨意增減)
-        const apps = ["照片", "設定", "相機", "預言", "App Store", "地圖", "時鐘", "備忘錄"];
-        const grid = document.getElementById('homeGrid');
-        apps.forEach(name => {
-            grid.innerHTML += `<div class="app"><div class="icon"></div><div class="label">${name}</div></div>`;
-        });
-
-        const dock = document.getElementById('dockBar');
-        for(let i=0; i<4; i++) {
-            dock.innerHTML += `<div class="app"><div class="icon"></div></div>`;
-        }
-    </script>
-</body>
-</html>
+    /* [關鍵測試點]：Dock 區域 */
+    .dock-container {
+        position: absolute;
+        bottom: 0; 
+        left: 0;
+        width: 100%;
+        /* 如果這裡有縫隙，你會看到 Body 的白色背景。
+           我們加上負邊距補償，並讓高度稍微溢出物理螢幕。
+        */
+        height: calc(100px + env(safe-area-inset-bottom)); 
+        
+        /* 暫時改用半透明紅色，方便你觀察它有沒有「貼地」 */
+        background: var(--dock-debug-color);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        padding: 15px 25px env(safe-area-inset-bottom);
+        
+        /* 頂部劃一條黑線，看 Dock 的起點 */
+        border-top: 2px solid #ff0000;
+    }
+</style>
