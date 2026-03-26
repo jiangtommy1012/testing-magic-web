@@ -12,8 +12,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         :root {
-            /* 使用純黑背景，與系統上下黑邊融為一體 */
-            --ios-bg: #000000;
+            /* 背景圖片路徑，可以替換為你的圖片 */
+            --bg-image: url('./images/background.jpg');
+            /* 如果沒有背景圖，使用漸層色 */
+            --ios-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -28,18 +30,15 @@
         .iphone-screen {
             width: 100%; height: 100%;
             background: var(--ios-bg);
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
             position: relative;
             overflow: hidden;
             display: flex; flex-direction: column;
         }
-        /* 狀態列 (自動避開動態島) */
-        .status-bar {
-            height: 44px; display: flex; justify-content: space-between;
-            align-items: center; padding: 0 20px; color: white;
-            font-size: 14px; font-weight: 600; z-index: 10;
-        }
         /* Swiper 容器 (桌面) */
-        .swiper { width: 100%; height: calc(100% - 160px); } /* 扣除狀態列與底座 */
+        .swiper { width: 100%; height: calc(100% - 110px); } /* 扣除底座 */
         .swiper-slide { display: flex; justify-content: center; align-items: flex-start; }
         
         /* App 網格排列 (確保 Swiper 滑動運作) */
@@ -53,9 +52,16 @@
         .app:active { transform: scale(0.9); } /* 點擊縮小動畫 */
         .icon {
             width: 60px; height: 60px; border-radius: 14px;
-            background-size: cover; margin: 0 auto;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background-size: cover; 
+            background-position: center;
+            margin: 0 auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             pointer-events: none; /* 讓點擊事件穿透到父元素 app */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
         }
         .app-label {
             color: white; font-size: 11px; margin-top: 6px;
@@ -98,41 +104,61 @@
     </div>
 
     <div class="iphone-screen">
-        <div class="status-bar">
-            <span id="time">9:41</span>
-            <div class="status-icons">📶 4G 🔋 80%</div>
-        </div>
 
         <div class="swiper mySwiper">
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
                     <div class="app-grid">
                         <div class="app" onclick="triggerCrash()">
-                            <div class="icon" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_Music_icon.png');"></div>
+                            <div class="icon" style="background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%); background-image: url('./images/music.png');">🎵</div>
                             <span class="app-label">音樂</span>
                         </div>
-                        <div class="app"><div class="icon" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e0/FaceTime_Icon_iOS.png');"></div><span class="app-label">FaceTime</span></div>
-                        <div class="app"><div class="icon" style="background-color: #4cd964;"></div><span class="app-label">照片</span></div>
+                        <div class="app">
+                            <div class="icon" style="background: linear-gradient(135deg, #00E676 0%, #00C853 100%); background-image: url('./images/facetime.png');">📹</div>
+                            <span class="app-label">FaceTime</span>
+                        </div>
+                        <div class="app">
+                            <div class="icon" style="background: linear-gradient(135deg, #FFD54F 0%, #FFA726 100%); background-image: url('./images/photos.png');">🖼️</div>
+                            <span class="app-label">照片</span>
+                        </div>
                         <div class="app" onclick="openApp()">
-                            <div class="icon" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/1a/Apple_Settings_icon.png');"></div>
+                            <div class="icon" style="background: linear-gradient(135deg, #90A4AE 0%, #607D8B 100%); background-image: url('./images/settings.png');">⚙️</div>
                             <span class="app-label">設定</span>
                         </div>
                     </div>
                 </div>
                 <div class="swiper-slide">
                     <div class="app-grid">
-                        <div class="app"><div class="icon" style="background-color: #333;"></div><span class="app-label">相機</span></div>
-                        <div class="app"><div class="icon" style="background-color: #ff3b30;"></div><span class="app-label">日曆</span></div>
+                        <div class="app">
+                            <div class="icon" style="background: linear-gradient(135deg, #424242 0%, #212121 100%); background-image: url('./images/camera.png');">📷</div>
+                            <span class="app-label">相機</span>
+                        </div>
+                        <div class="app">
+                            <div class="icon" style="background: linear-gradient(135deg, #FF5252 0%, #D32F2F 100%); background-image: url('./images/calendar.png');">📅</div>
+                            <span class="app-label">日曆</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="dock">
-            <div class="app"><div class="icon" style="background-color: #ff9500;"></div><span class="app-label">電話</span></div>
-            <div class="app"><div class="icon" style="background-color: #33a6ff;"></div><span class="app-label">訊息</span></div>
-            <div class="app"><div class="icon" style="background-color: #fff;"></div><span class="app-label">郵件</span></div>
-            <div class="app"><div class="icon" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/c9/Safari_Icon_iOS.png');"></div><span class="app-label">Safari</span></div>
+            <div class="app">
+                <div class="icon" style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); background-image: url('./images/phone.png');">📞</div>
+                <span class="app-label">電話</span>
+            </div>
+            <div class="app">
+                <div class="icon" style="background: linear-gradient(135deg, #4FC3F7 0%, #0288D1 100%); background-image: url('./images/messages.png');">💬</div>
+                <span class="app-label">訊息</span>
+            </div>
+            <div class="app">
+                <div class="icon" style="background: linear-gradient(135deg, #64B5F6 0%, #1976D2 100%); background-image: url('./images/mail.png');">✉️</div>
+                <span class="app-label">郵件</span>
+            </div>
+            <div class="app">
+                <div class="icon" style="background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%); background-image: url('./images/safari.png');">🧭</div>
+                <span class="app-label">Safari</span>
+            </div>
         </div>
     </div>
 
@@ -144,16 +170,6 @@
             loop: false,
             pointerEvents: 'auto', // 關鍵：確保滑動和點擊都能運作
         });
-
-        // 模擬時間更新
-        function updateTime() {
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('time').innerText = `${hours}:${minutes}`;
-        }
-        setInterval(updateTime, 1000);
-        updateTime();
 
         // 進入假的 App
         function openApp() {
