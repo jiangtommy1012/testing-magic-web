@@ -22,23 +22,29 @@
             overflow: hidden; background: #000;
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
-            /* 讓內容填滿安全區域，避開動態島/劉海 */
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
         }
         /* 主螢幕容器 */
         .iphone-screen {
-            width: 100%; height: 100%;
+            width: 100%; 
+            height: 100%;
             background: var(--ios-bg);
             background-image: var(--bg-image);
             background-size: cover;
             background-position: center;
             position: relative;
             overflow: hidden;
-            display: flex; flex-direction: column;
+            display: flex; 
+            flex-direction: column;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            box-sizing: border-box;
         }
         /* Swiper 容器 (桌面) */
-        .swiper { width: 100%; height: calc(100% - 110px); } /* 扣除底座 */
+        .swiper { 
+            width: 100%; 
+            flex: 1;
+            padding-bottom: 110px; /* 為底座留空間 */
+        }
         .swiper-slide { display: flex; justify-content: center; align-items: flex-start; }
         
         /* App 網格排列 (確保 Swiper 滑動運作) */
@@ -71,11 +77,19 @@
 
         /* 底座 (Dock) */
         .dock {
-            position: absolute; bottom: 25px; left: 10px; right: 10px;
-            height: 90px; background: rgba(255,255,0,0.2);
-            backdrop-filter: blur(20px); border-radius: 30px;
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            padding: 10px; align-items: center; justify-items: center;
+            position: absolute; 
+            bottom: max(10px, env(safe-area-inset-bottom)); 
+            left: 10px; 
+            right: 10px;
+            height: 90px; 
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(20px); 
+            border-radius: 30px;
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr);
+            padding: 10px; 
+            align-items: center; 
+            justify-items: center;
             z-index: 5;
         }
 
