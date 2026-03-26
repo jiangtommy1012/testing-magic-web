@@ -1,63 +1,124 @@
-<style>
-    :root {
-        /* 測試用：背景改為純白色 */
-        --test-bg: #ffffff;
-        --dock-debug-color: rgba(255, 0, 0, 0.3); /* 紅色透明，方便看 Dock 範圍 */
-    }
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    * { box-sizing: border-box; }
+    <style>
+        :root {
+            /* --- [🔧 自訂區域：在這裡貼上桌布 Base64] --- */
+            --wallpaper: url('data:image/png;base64,這裡貼上桌布');
+            --ios-text: #ffffff;
+        }
 
-    body, html {
-        margin: 0; padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        position: fixed;
-        /* 改為白色背景 */
-        background-color: var(--test-bg);
-    }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+        }
 
-    /* 頂部空間 */
-    .top-spacer {
-        height: calc(50px + env(safe-area-inset-top));
-        background-color: #f0f0f0; /* 淺灰色標示頂部區域 */
-    }
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            position: fixed;
+            /* 背景自動適應比例 */
+            background: #000 var(--wallpaper) no-repeat center center / cover;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-    /* App 網格 */
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        grid-gap: 25px 15px;
-        padding: 10px 25px;
-    }
+        /* 1. 自動適配頂部：避開不同型號的狀態列高度 */
+        .top-spacer {
+            /* 使用 env 自動偵測狀態列高度，並額外增加 10px 留白 */
+            height: calc(10px + env(safe-area-inset-top)); 
+            min-height: 44px; /* 舊款 iPhone 的最低高度補償 */
+            width: 100%;
+        }
 
-    .icon {
-        width: 60px; height: 60px;
-        border-radius: 14px;
-        background-color: #ddd; /* 灰色佔位圖示 */
-    }
+        /* 2. 彈性網格：App 圖示會根據螢幕寬度自動排列 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 4vh 4vw; /* 使用視窗單位，讓間距隨螢幕大小縮放 */
+            padding: 2vh 6vw;
+            width: 100%;
+        }
 
-    /* [關鍵測試點]：Dock 區域 */
-    .dock-container {
-        position: absolute;
-        bottom: 0; 
-        left: 0;
-        width: 100%;
-        /* 如果這裡有縫隙，你會看到 Body 的白色背景。
-           我們加上負邊距補償，並讓高度稍微溢出物理螢幕。
-        */
-        height: calc(100px + env(safe-area-inset-bottom)); 
-        
-        /* 暫時改用半透明紅色，方便你觀察它有沒有「貼地」 */
-        background: var(--dock-debug-color);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        padding: 15px 25px env(safe-area-inset-bottom);
-        
-        /* 頂部劃一條黑線，看 Dock 的起點 */
-        border-top: 2px solid #ff0000;
-    }
-</style>
+        .app-item {
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .icon {
+            /* 針對不同螢幕寬度，保持圖示比例 */
+            width: 15vw; height: 15vw;
+            max-width: 62px; max-height: 62px;
+            min-width: 50px; min-height: 50px;
+            border-radius: 22%; /* 完美的 iOS 圓角比例 */
+            background-color: rgba(255,255,255,0.1);
+            background-size: cover;
+            margin-bottom: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .label {
+            color: var(--ios-text);
+            font-size: 11px;
+            font-weight: 500;
+            text-align: center;
+            width: 100%;
+            white-space: nowrap;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+
+        /* 3. [核心修正] 自動適配底部 Dock */
+        .dock-wrapper {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            /* 自動根據是否有 Home Bar 延伸高度 */
+            height: calc(85px + env(safe-area-inset-bottom));
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            padding: 15px 5vw env(safe-area-inset-bottom); /* 底部填充自動適配物理邊緣 */
+            
+            border-top: 0.3px solid rgba(255,255,255,0.2);
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-spacer"></div>
+    <div class="grid" id="homeGrid"></div>
+    <div class="dock-wrapper" id="dockBar"></div>
+
+    <script>
+        // 設定 App 資料夾
+        const appList = [
+            { name: "照片", icon: "" }, { name: "設定", icon: "" },
+            { name: "相機", icon: "" }, { name: "預言", icon: "" },
+            { name: "App Store", icon: "" }, { name: "地圖", icon: "" },
+            { name: "時鐘", icon: "" }, { name: "備忘錄", icon: "" }
+        ];
+
+        const grid = document.getElementById('homeGrid');
+        appList.forEach(app => {
+            grid.innerHTML += `
+                <div class="app-item">
+                    <div class="icon" style="background-image: url('${app.icon}')"></div>
+                    <div class="label">${app.name}</div>
+                </div>`;
+        });
+
+        // 底部 Dock 預設 4 個
+        const dock = document.getElementById('dockBar');
+        for(let i=0; i<4; i++) {
+            dock.innerHTML += `<div class="app-item"><div class="icon"></div></div>`;
+        }
+    </script>
+</body>
+</html>
