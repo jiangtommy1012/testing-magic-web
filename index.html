@@ -6,85 +6,70 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="System">
 
     <title>System</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         :root {
             --ios-bg: #000000;
+            /* 根據 image_7.png 的視覺感調整 Dock 顏色 */
+            --dock-bg: rgba(255, 255, 255, 0.25);
         }
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden; background: #000;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            -webkit-font-smoothing: antialiased;
+            font-family: -apple-system, sans-serif;
         }
 
-        /* 主螢幕容器：移除 padding-top 讓背景填滿頂部 */
         .iphone-screen {
             width: 100%; height: 100%;
             background: var(--ios-bg);
             position: relative;
             overflow: hidden;
+        }
+
+        /* 頂部避開動態島 */
+        .top-gap { height: env(safe-area-inset-top); width: 100%; }
+
+        /* 桌面滑動區域 */
+        .swiper { width: 100%; height: 100%; }
+        .swiper-slide { 
             display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start;
         }
-
-        /* 1. 移除狀態列 (status-bar)，僅保留一個隱形的頂部緩衝 */
-        .top-gap {
-            height: env(safe-area-inset-top);
-            width: 100%;
-        }
-
-        /* Swiper 容器：調整高度計算，讓桌面 App 稍微往下移避開動態島 */
-        .swiper { width: 100%; height: calc(100% - 130px); } 
-        .swiper-slide { display: flex; justify-content: center; align-items: flex-start; }
         
         .app-grid {
             display: grid; grid-template-columns: repeat(4, 1fr);
-            padding: 40px 15px; /* 增加頂部間距，視覺上更平衡 */
-            grid-gap: 25px 15px; width: 100%;
-            pointer-events: auto;
+            padding: 30px 20px; grid-gap: 25px 15px; width: 100%;
         }
 
-        .app { text-align: center; cursor: pointer; transition: transform 0.1s; pointer-events: auto; }
-        .app:active { transform: scale(0.9); } 
+        .app { text-align: center; }
         .icon {
-            width: 60px; height: 60px; border-radius: 14px;
-            background-size: cover; margin: 0 auto;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            pointer-events: none;
+            width: 62px; height: 62px; border-radius: 14px;
+            background-color: #333; background-size: cover; margin: 0 auto;
         }
         .app-label {
             color: white; font-size: 11px; margin-top: 6px;
-            display: block; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-            pointer-events: none;
+            display: block; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
 
-        /* 2. 微調底座 (Dock) 距離 */
+        /* 修正後的 Dock 位置 */
         .dock {
             position: absolute; 
-            /* 調整 bottom，原為 10px，這裡稍微往上移 */
-            bottom: calc(25px + env(safe-area-inset-bottom)); 
-            left: 10px; right: 10px;
-            height: 95px; background: rgba(255,255,255,0.25);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border-radius: 35px;
+            /* 調整：不再過高，維持在螢幕底端稍微往上一點點的位置 */
+            bottom: calc(15px + env(safe-area-inset-bottom)); 
+            left: 12px; right: 12px;
+            height: 92px; 
+            background: var(--dock-bg);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border-radius: 32px;
             display: grid; grid-template-columns: repeat(4, 1fr);
-            padding: 10px; align-items: center; justify-items: center;
-            z-index: 5;
-        }
-
-        /* 當機特效 */
-        .crash-overlay {
-            position: fixed; inset: 0; background: red;
-            z-index: 999; display: none;
+            padding: 0 10px; align-items: center; justify-items: center;
+            z-index: 99; /* 確保在 Swiper 之上 */
         }
     </style>
 </head>
 <body>
-
-    <div class="crash-overlay" id="crashScreen"></div>
 
     <div class="iphone-screen">
         <div class="top-gap"></div>
@@ -93,42 +78,41 @@
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
                     <div class="app-grid">
-                        <div class="app" onclick="triggerCrash()">
-                            <div class="icon" style="background-color: #ff3b30;"></div>
-                            <span class="app-label">音樂</span>
-                        </div>
                         <div class="app"><div class="icon" style="background-color: #4cd964;"></div><span class="app-label">照片</span></div>
-                        <div class="app"><div class="icon" style="background-color: #5856d6;"></div><span class="app-label">FaceTime</span></div>
+                        <div class="app"><div class="icon" style="background-color: #33a6ff;"></div><span class="app-label">相機</span></div>
                         <div class="app"><div class="icon" style="background-color: #8e8e93;"></div><span class="app-label">設定</span></div>
+                        <div class="app"><div class="icon" style="background-color: #5856d6;"></div><span class="app-label">Abracadabra</span></div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="app-grid">
+                        <div class="app"><div class="icon" style="background-color: #ff3b30;"></div><span class="app-label">音樂</span></div>
+                        <div class="app"><div class="icon" style="background-color: #ff9500;"></div><span class="app-label">備忘錄</span></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="dock">
+            <div class="app"><div class="icon" style="background-color: #4cd964;"></div></div>
+            <div class="app"><div class="icon" style="background-color: #8e8e93;"></div></div>
             <div class="app"><div class="icon" style="background-color: #ff9500;"></div></div>
             <div class="app"><div class="icon" style="background-color: #33a6ff;"></div></div>
-            <div class="app"><div class="icon" style="background-color: #fff;"></div></div>
-            <div class="app"><div class="icon" style="background-color: #4cd964;"></div></div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
+        // 正確初始化 Swiper
         var swiper = new Swiper(".mySwiper", {
             direction: 'horizontal',
             loop: false,
-            pointerEvents: 'auto',
+            resistanceRatio: 0.8, // 增加滑到邊緣的阻力感，更像 iOS
         });
 
-        function triggerCrash() {
-            document.getElementById('crashScreen').style.display = 'block';
-            setTimeout(() => {
-                alert('系統發生嚴重錯誤：0x8892');
-            }, 100);
-        }
-
-        document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+        // 防止長按彈出菜單與縮放
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('gesturestart', e => e.preventDefault());
     </script>
 </body>
 </html>
