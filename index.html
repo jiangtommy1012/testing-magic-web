@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Home Screen</title>
@@ -17,161 +16,98 @@
             --text-color: #ffffff;
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            outline: none;
-        }
-
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
             background-color: var(--bg-color);
-            font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
-            overflow: hidden; /* 防止橡皮筋回彈效果 */
-            user-select: none;
+            font-family: -apple-system, sans-serif;
+            overflow: hidden;
         }
 
-        /* 主畫面 App 網格 */
+        /* 內容容器 */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 25px 15px;
-            padding: 70px 25px 0 25px; /* 避開頂部狀態列 */
+            padding: 70px 25px 0 25px;
         }
 
-        .app-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
+        .app-item { display: flex; flex-direction: column; align-items: center; }
 
-        /* App 圖示 */
         .app-icon {
-            width: var(--icon-size);
-            height: var(--icon-size);
+            width: var(--icon-size); height: var(--icon-size);
             border-radius: var(--icon-radius);
-            background-color: #444; 
-            margin-bottom: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            background-size: cover;
-            background-position: center;
-            position: relative; /* 方便未來放置通知紅點 (Absolute 定位) */
-            transition: transform 0.1s;
+            background-color: #444; margin-bottom: 6px;
+            background-size: cover; background-position: center;
         }
 
-        /* 點擊時縮小的效果 */
-        .app-icon:active {
-            transform: scale(0.9);
-        }
-
-        .app-label {
-            color: var(--text-color);
-            font-size: 11px;
-            font-weight: 400;
-            white-space: nowrap;
-        }
+        .app-label { color: var(--text-color); font-size: 11px; }
 
         /* 搜尋按鈕 */
         .search-bar {
-            position: fixed;
-            bottom: 120px; /* 位於 Dock 上方 */
+            position: absolute;
+            bottom: 130px; /* 改用 absolute 相對於 body */
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 4px 14px;
-            border-radius: 20px;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            padding: 4px 14px; border-radius: 20px;
+        }
+
+        /* 關鍵：外層底座 (滿版寬度) */
+        .dock-wrapper {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 110px; /* 足夠讓內層 Dock 呼吸的高度 */
             display: flex;
-            align-items: center;
-            gap: 4px;
+            justify-content: center;
+            align-items: flex-end; /* 讓內層 Dock 靠下 */
+            padding-bottom: 12px;  /* 這裡控制 Dock 與螢幕底部的最終距離 */
+            pointer-events: none;  /* 確保不擋住點擊 */
         }
 
-        .search-text {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 12px;
-        }
-
-        /* 下方 Dock - 解決截斷問題的核心設定 */
+        /* 內層圓角 Dock */
         .dock {
-            position: fixed; /* Fixed: 釘在螢幕玻璃上，不隨捲動消失 */
-            bottom: -20px;   /* 使用負值下壓，確保背景延伸到底部 */
-            left: 50%;
-            transform: translateX(-50%);
+            pointer-events: auto; /* 恢復點擊 */
             width: 92%;
-            height: 115px;  /* 增加總高度補償負值位移 */
+            height: 94px;
             background-color: var(--dock-bg);
-            backdrop-filter: blur(35px);
-            -webkit-backdrop-filter: blur(35px);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
             border-radius: 35px;
             display: flex;
             justify-content: space-evenly;
             align-items: center;
-            padding: 0 10px 20px 10px; /* 增加底部內距，把圖示撐回正確視覺高度 */
-            z-index: 999;
+            padding: 0 10px;
         }
 
-        /* 特殊色塊樣式 */
-        .icon-system { background: linear-gradient(135deg, #5e5e5e, #2e2e2e); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px;}
+        /* 色塊示範 */
         .icon-photos { background: #fff; }
         .icon-camera { background: #333; }
-        .icon-appstore { background: #007aff; }
-        .icon-health { background: #fff; }
-        .icon-phone { background: #34c759; }
-
+        .icon-system { background: #5e5e5e; display: flex; align-items: center; justify-content: center; color: white; }
     </style>
 </head>
 <body>
 
     <div class="grid-container">
-        <div class="app-item">
-            <div class="app-icon icon-photos"></div>
-            <div class="app-label">照片</div>
-        </div>
-        <div class="app-item">
-            <div class="app-icon icon-camera"></div>
-            <div class="app-label">相機</div>
-        </div>
-        <div class="app-item">
+        <div class="app-item"><div class="app-icon icon-photos"></div><div class="app-label">照片</div></div>
+        <div class="app-item"><div class="app-icon icon-camera"></div><div class="app-label">相機</div></div>
+        <div class="app-item"><div class="app-icon" style="background-color: #8e8e93;"></div><div class="app-label">設定</div></div>
+        <div class="app-item"><div class="app-icon" style="background-color: #007aff;"></div><div class="app-label">檔案</div></div>
+        <div class="app-item"><div class="app-icon" style="background-color: #555;"></div><div class="app-label">計算機</div></div>
+        <div class="app-item"><div class="app-icon icon-system">A</div><div class="app-label">Abracadabra</div></div>
+    </div>
+
+    <div class="search-bar"><span style="color:white; font-size:12px;">🔍 搜尋</span></div>
+
+    <div class="dock-wrapper">
+        <div class="dock">
+            <div class="app-icon" style="background-color: #34c759;"></div>
             <div class="app-icon" style="background-color: #8e8e93;"></div>
-            <div class="app-label">設定</div>
-        </div>
-        <div class="app-item">
+            <div class="app-icon" style="background-color: #fff;"></div>
             <div class="app-icon" style="background-color: #007aff;"></div>
-            <div class="app-label">檔案</div>
         </div>
-
-        <div class="app-item">
-            <div class="app-icon" style="background-color: #555;"></div>
-            <div class="app-label">計算機</div>
-        </div>
-        <div class="app-item">
-            <div class="app-icon icon-system">A</div>
-            <div class="app-label">Abracadabra</div>
-        </div>
-        <div class="app-item">
-            <div class="app-icon icon-appstore"></div>
-            <div class="app-label">App Store</div>
-        </div>
-        <div class="app-item">
-            <div class="app-icon icon-health"></div>
-            <div class="app-label">健康</div>
-        </div>
-    </div>
-
-    <div class="search-bar">
-        <span class="search-text">🔍 搜尋</span>
-    </div>
-
-    <div class="dock">
-        <div class="app-icon icon-phone"></div>
-        <div class="app-icon" style="background-color: #8e8e93;"></div>
-        <div class="app-icon" style="background-color: #fff;"></div>
-        <div class="app-icon" style="background-color: #007aff;"></div>
     </div>
 
 </body>
