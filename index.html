@@ -3,110 +3,175 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Home</title>
+    <meta name="apple-mobile-web-app-title" content="System">
+
+    <title>System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         :root {
-            /* --- [🔧 自訂區域：在這裡貼上你 image_7.png 桌布的 Base64] --- */
-            --home-wallpaper: url('data:image/png;base64,這裡貼上你桌布資料');
+            /* 使用純黑背景，與系統上下黑邊融為一體 */
+            --ios-bg: #000000;
         }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; position: fixed;
-            background: #000 var(--home-wallpaper) no-repeat center center / cover;
-            font-family: -apple-system, sans-serif; -webkit-font-smoothing: antialiased;
-            user-select: none;
+            overflow: hidden; background: #000;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            /* 讓內容填滿安全區域，避開動態島/劉海 */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
-
-        /* 1. 狀態列留空 */
-        .status-spacer { height: calc(10px + env(safe-area-inset-top)); width: 100%; }
-
-        /* 2. 主網格圖示 */
-        .grid {
+        /* 主螢幕容器 */
+        .iphone-screen {
+            width: 100%; height: 100%;
+            background: var(--ios-bg);
+            position: relative;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        /* 狀態列 (自動避開動態島) */
+        .status-bar {
+            height: 44px; display: flex; justify-content: space-between;
+            align-items: center; padding: 0 20px; color: white;
+            font-size: 14px; font-weight: 600; z-index: 10;
+        }
+        /* Swiper 容器 (桌面) */
+        .swiper { width: 100%; height: calc(100% - 160px); } /* 扣除狀態列與底座 */
+        .swiper-slide { display: flex; justify-content: center; align-items: flex-start; }
+        
+        /* App 網格排列 (確保 Swiper 滑動運作) */
+        .app-grid {
             display: grid; grid-template-columns: repeat(4, 1fr);
-            grid-gap: 20px 15px; padding: 10px 25px;
+            padding: 30px 15px; grid-gap: 25px 15px; width: 100%;
+            pointer-events: auto; /* 確保 App 可以被點擊 */
         }
-        .app-item { display: flex; flex-direction: column; align-items: center; }
-        .icon-box {
+        /* App 圖示 */
+        .app { text-align: center; cursor: pointer; transition: transform 0.1s; pointer-events: auto; }
+        .app:active { transform: scale(0.9); } /* 點擊縮小動畫 */
+        .icon {
             width: 60px; height: 60px; border-radius: 14px;
-            background-color: rgba(255,255,255,0.1); /* 佔位用 */
-            background-size: cover; margin-bottom: 5px;
+            background-size: cover; margin: 0 auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            pointer-events: none; /* 讓點擊事件穿透到父元素 app */
         }
         .app-label {
-            color: #fff; font-size: 11px; font-weight: 500; text-align: center;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+            color: white; font-size: 11px; margin-top: 6px;
+            display: block; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            pointer-events: none;
         }
 
-        /* 3. [核心修正]：Dock 欄 (仿 image_7.png 佈局) */
-        .dock-container {
-            position: absolute; bottom: 0; left: 0; width: 100%;
-            /* 修正為真正全螢幕：高度延伸至物理邊緣 */
-            height: calc(90px + env(safe-area-inset-bottom));
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-            
+        /* 底座 (Dock) */
+        .dock {
+            position: absolute; bottom: 10px; left: 10px; right: 10px;
+            height: 90px; background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(20px); border-radius: 30px;
             display: grid; grid-template-columns: repeat(4, 1fr);
-            grid-gap: 15px; padding: 15px 25px calc(15px + env(safe-area-inset-bottom));
-            
-            border-top: 0.3px solid rgba(255,255,255,0.15);
-            z-index: 100;
+            padding: 10px; align-items: center; justify-items: center;
+            z-index: 5;
         }
 
-        /* 通知紅點 (用 CSS 畫) */
-        .notification-badge {
-            position: absolute; top: -10px; right: -10px;
-            min-width: 20px; height: 20px; border-radius: 10px;
-            background-color: #ff3b30; color: white;
-            font-size: 12px; font-weight: 700;
-            display: flex; justify-content: center; align-items: center;
-            padding: 0 4px; box-sizing: content-box;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        /* 假的 App 彈出介面 */
+        .fake-app-overlay {
+            position: fixed; inset: 0; background: white;
+            z-index: 100; display: none;
+            opacity: 0; transform: scale(0.9);
+            transition: all 0.3s ease-out;
+            padding-top: 60px; text-align: center;
+        }
+        .fake-app-overlay.active { display: block; opacity: 1; transform: scale(1); }
+        .close-btn {
+            position: absolute; top: 40px; right: 20px;
+            padding: 10px; background: #eee; border-radius: 50%;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="status-spacer"></div>
-    <div class="grid" id="homeGrid"></div>
 
-    <div class="dock-container">
-        <div class="app-item" style="position: relative;">
-            <div class="icon-box" style="background-color: #ddd;">
-                </div>
-            <div class="notification-badge">1</div>
+    <div id="settingsApp" class="fake-app-overlay">
+        <div class="close-btn" onclick="closeApp()">✕</div>
+        <h2>系統設定</h2>
+        <p style="color: #666;">無線局域網、藍牙、蜂窩網絡...</p>
+    </div>
+
+    <div class="iphone-screen">
+        <div class="status-bar">
+            <span id="time">9:41</span>
+            <div class="status-icons">📶 4G 🔋 80%</div>
         </div>
-        <div class="app-item">
-            <div class="icon-box" style="background-color: #ddd;">
+
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="app-grid">
+                        <div class="app" onclick="triggerCrash()">
+                            <div class="icon" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_Music_icon.png');"></div>
+                            <span class="app-label">音樂</span>
+                        </div>
+                        <div class="app"><div class="icon" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e0/FaceTime_Icon_iOS.png');"></div><span class="app-label">FaceTime</span></div>
+                        <div class="app"><div class="icon" style="background-color: #4cd964;"></div><span class="app-label">照片</span></div>
+                        <div class="app" onclick="openApp()">
+                            <div class="icon" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/1/1a/Apple_Settings_icon.png');"></div>
+                            <span class="app-label">設定</span>
+                        </div>
+                    </div>
                 </div>
+                <div class="swiper-slide">
+                    <div class="app-grid">
+                        <div class="app"><div class="icon" style="background-color: #333;"></div><span class="app-label">相機</span></div>
+                        <div class="app"><div class="icon" style="background-color: #ff3b30;"></div><span class="app-label">日曆</span></div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="app-item">
-            <div class="icon-box" style="background-color: #ddd;">
-                </div>
-        </div>
-        <div class="app-item" style="position: relative;">
-            <div class="icon-box" style="background-color: #ddd;">
-                </div>
-            <div class="notification-badge">3,997</div>
+
+        <div class="dock">
+            <div class="app"><div class="icon" style="background-color: #ff9500;"></div><span class="app-label">電話</span></div>
+            <div class="app"><div class="icon" style="background-color: #33a6ff;"></div><span class="app-label">訊息</span></div>
+            <div class="app"><div class="icon" style="background-color: #fff;"></div><span class="app-label">郵件</span></div>
+            <div class="app"><div class="icon" style="background-image: url('https://upload.wikimedia.org/wikipedia/commons/c/c9/Safari_Icon_iOS.png');"></div><span class="app-label">Safari</span></div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
-        // 生成主網格的 App (可自由增減)
-        const apps = [
-            { name: "照片", icon: "" }, { name: "設定", icon: "" }, { name: "相機", icon: "" }, { name: "Abracadabra", icon: "" },
-            { name: "App Store", icon: "" }, { name: "地圖", icon: "" }, { name: "時鐘", icon: "" }, { name: "備忘錄", icon: "" }
-        ];
-        const grid = document.getElementById('homeGrid');
-        apps.forEach(app => {
-            grid.innerHTML += `
-                <div class="app-item">
-                    <div class="icon-box" style="background-image: url('${app.icon}')"></div>
-                    <div class="label">${app.name}</div>
-                </div>`;
+        // 初始化桌面滑動 (確保 Swiper 初始化)
+        var swiper = new Swiper(".mySwiper", {
+            direction: 'horizontal',
+            loop: false,
+            pointerEvents: 'auto', // 關鍵：確保滑動和點擊都能運作
         });
+
+        // 模擬時間更新
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('time').innerText = `${hours}:${minutes}`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // 進入假的 App
+        function openApp() {
+            document.getElementById('settingsApp').classList.add('active');
+        }
+        function closeApp() {
+            document.getElementById('settingsApp').classList.remove('active');
+        }
+
+        // 當機魔術觸發點
+        function triggerCrash() {
+            alert('系統發生嚴重錯誤：0x8892');
+            // 當機後，整個螢幕變紅色
+            document.querySelector('.iphone-screen').style.background = 'red';
+        }
+
+        // 禁止縮放
+        document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
     </script>
 </body>
 </html>
