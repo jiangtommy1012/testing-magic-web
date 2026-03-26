@@ -20,6 +20,7 @@
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
 
         body, html {
@@ -28,11 +29,9 @@
             width: 100%;
             height: 100%;
             background-color: var(--bg-color);
-            /* 如果你有背景圖，可以取消下面註釋 */
-            /* background-image: url('your-wallpaper.jpg'); */
-            /* background-size: cover; */
             font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
-            overflow: hidden;
+            overflow: hidden; /* 防止橡皮筋回彈效果 */
+            user-select: none;
         }
 
         /* 主畫面 App 網格 */
@@ -40,7 +39,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 25px 15px;
-            padding: 70px 25px 0 25px; /* 頂部留出狀態欄空間 */
+            padding: 70px 25px 0 25px; /* 避開頂部狀態列 */
         }
 
         .app-item {
@@ -50,7 +49,7 @@
             text-align: center;
         }
 
-        /* App 圖示 - 之後可在此替換 background-image */
+        /* App 圖示 */
         .app-icon {
             width: var(--icon-size);
             height: var(--icon-size);
@@ -60,6 +59,13 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             background-size: cover;
             background-position: center;
+            position: relative; /* 方便未來放置通知紅點 (Absolute 定位) */
+            transition: transform 0.1s;
+        }
+
+        /* 點擊時縮小的效果 */
+        .app-icon:active {
+            transform: scale(0.9);
         }
 
         .app-label {
@@ -69,13 +75,13 @@
             white-space: nowrap;
         }
 
-        /* 搜尋按鈕 - 位於 Dock 上方 */
+        /* 搜尋按鈕 */
         .search-bar {
             position: fixed;
-            bottom: 125px; /* 調整此數值可改變與 Dock 的距離 */
+            bottom: 120px; /* 位於 Dock 上方 */
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             padding: 4px 14px;
@@ -86,30 +92,30 @@
         }
 
         .search-text {
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.8);
             font-size: 12px;
         }
 
-        /* 下方 Dock 欄位 - 強制貼底優化 */
+        /* 下方 Dock - 解決截斷問題的核心設定 */
         .dock {
-            position: fixed;
-            bottom: -5px; /* 這是關鍵：手動壓低，無視安全區域限制 */
+            position: fixed; /* Fixed: 釘在螢幕玻璃上，不隨捲動消失 */
+            bottom: -20px;   /* 使用負值下壓，確保背景延伸到底部 */
             left: 50%;
             transform: translateX(-50%);
             width: 92%;
-            height: 94px;
+            height: 115px;  /* 增加總高度補償負值位移 */
             background-color: var(--dock-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-radius: 34px;
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            border-radius: 35px;
             display: flex;
             justify-content: space-evenly;
             align-items: center;
-            padding: 0 10px;
+            padding: 0 10px 20px 10px; /* 增加底部內距，把圖示撐回正確視覺高度 */
             z-index: 999;
         }
 
-        /* 特殊色塊示範 */
+        /* 特殊色塊樣式 */
         .icon-system { background: linear-gradient(135deg, #5e5e5e, #2e2e2e); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px;}
         .icon-photos { background: #fff; }
         .icon-camera { background: #333; }
