@@ -11,13 +11,9 @@
     <title>Fake Home</title>
     <style>
         :root {
-            /* --- [🔧 自訂區域 1：桌布背景] --- */
-            /* 1. 將下面的 Base64 替換成你自己的滿版桌布圖片 */
-            /* 建議尺寸：1284x2778 像素 (iPhone 14 Plus) */
-            --home-bg-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='); /* 預設為純黑 */
-            
-            /* 如果你有圖片網址，可以用這個格式： */
-            /* --home-bg-image: url('https://your-server.com/your-wallpaper.jpg'); */
+            /* --- [🔧 自訂區域：桌布路徑] --- */
+            /* 我預設使用一個免費圖片網址，你可以換成你 Repo 的路徑 */
+            --home-bg-image: url('https://images.unsplash.com/photo-1599420186946-7b6fb4e78900'); 
             
             --ios-text: #ffffff;
             --icon-label-font: -apple-system, sans-serif;
@@ -26,82 +22,80 @@
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden;
-            background-color: #000; /* 防止圖片載入前的閃爍 */
+            background-color: #000;
             background-image: var(--home-bg-image);
             background-size: cover; background-position: center;
             font-family: var(--icon-label-font);
             -webkit-font-smoothing: antialiased;
-            user-select: none; /* 防止文字被選取 */
-        }
-
-        /* [1] 頂部狀態列留空區域 */
-        .status-bar-spacer {
-            height: 60px; /* 針對 iPhone 14 Plus 動態島/瀏海區域留空 */
-            width: 100%;
-            /* 如果你想在調試時看到這個區域，可以加上 background: rgba(255,0,0,0.2); */
-            padding-top: env(safe-area-inset-top);
-        }
-
-        /* [2] 主畫面圖示網格 */
-        .home-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 仿 iOS 4 行圖示 */
-            grid-gap: 25px 15px; /* 圖示間距：上下25px，左右15px */
-            padding: 20px 25px; /* 網格四周留白 */
+            user-select: none;
+            /* 關鍵：利用 viewport-fit=cover 填滿 */
             box-sizing: border-box;
         }
 
-        /* [3] 單個 App 圖示容器 */
+        /* 1. 頂部狀態列留空 */
+        .status-bar-spacer {
+            height: 60px; /* 針對動態島區域留空 */
+            width: 100%;
+            padding-top: env(safe-area-inset-top);
+        }
+
+        /* 2. 主畫面圖示網格 */
+        .home-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 20px 15px; /* 上下20px，左右15px */
+            padding: 20px 25px;
+            box-sizing: border-box;
+        }
+
+        /* 單個 App 圖示 */
         .app-icon-wrap {
             display: flex; flex-direction: column; align-items: center;
             cursor: pointer;
             transition: transform 0.1s;
         }
-        .app-icon-wrap:active {
-            transform: scale(0.9); /* 按下時的縮放反饋 */
-        }
+        .app-icon-wrap:active { transform: scale(0.9); }
 
-        /* [4] App 圖示圖片 */
+        /* App 圖示圖片 - 仿你截圖的樣式 */
         .app-icon-img {
-            width: 60px; height: 60px; /* iPhone 14 Plus 的標準圖示大小 */
-            border-radius: 14px; /* iOS 圓角 */
+            width: 60px; height: 60px;
+            border-radius: 14px;
             background-size: cover; background-position: center;
+            /* 預設一個類似的灰色，如果沒圖片會顯示它 */
+            background-color: rgba(255,255,255,0.1); 
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             margin-bottom: 6px;
-            /* 防止 Base64 圖片鋸齒 */
-            image-rendering: -webkit-optimize-contrast; 
         }
 
-        /* [5] App 名稱文字 */
+        /* App 名稱文字 */
         .app-label {
             color: var(--ios-text);
             font-size: 11px; font-weight: 500;
             text-align: center;
             width: 100%;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; /* 防止長檔名破壞排版 */
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
             opacity: 0.9;
         }
 
-        /* [6] 底部 Dock 欄偽裝 */
+        /* 6. [🔧 修正重點：Dock 貼齊下緣] --- */
         .dock-bar {
             position: absolute; bottom: 0; left: 0; width: 100%;
-            height: 100px; /* iOS Dock 高度 */
-            background: rgba(255, 255, 255, 0.2); /* 仿 iOS 的模糊背景 */
-            backdrop-filter: blur(20px); /* 關鍵：高斯模糊 */
+            /* 調整高度與 padding，確保完美貼齊 env(safe-area-inset-bottom) */
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
             border-top: 1px solid rgba(255,255,255,0.1);
-            display: grid; grid-template-columns: repeat(4, 1fr); /* Dock 通常有 4 個 App */
+            display: grid; grid-template-columns: repeat(4, 1fr);
             grid-gap: 15px; padding: 15px 25px; box-sizing: border-box;
-            padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* 避開底部 Home Bar */
+            /* 關鍵：利用這行來計算底部安全區域，讓 Dock 貼齊下緣而不留縫隙 */
+            padding-bottom: env(safe-area-inset-bottom); 
+            z-index: 90;
         }
+        
+        /* [🔧 修正重點：移除原本手動畫的白線] */
+        /* 因為全螢幕 PWA 會使用手機真正的 Home Bar 指示線 */
+        .home-bar-indicator { display: none; }
 
-        /* [7] 底部上滑提示線 */
-        .home-bar-indicator {
-            position: absolute; bottom: 8px; left: 50%;
-            transform: translateX(-50%);
-            width: 140px; height: 5px;
-            background: var(--ios-text); border-radius: 3px;
-            opacity: 0.8; z-index: 101; pointer-events: none;
-        }
     </style>
 </head>
 <body>
@@ -112,46 +106,37 @@
 
     <div class="dock-bar" id="dockBar"></div>
 
-    <div class="home-bar-indicator"></div>
-
     <script>
-        /* --- [🔧 自訂區域 2：App 列表與圖片] --- */
-        // 在這裡修改你的 App 名稱與圖示。
-        // 我預設提供了一個基本的圖示 Base64 作為範例。
+        // --- [🔧 自訂區域：App 名稱與路徑] ---
+        // 你直接把 Repo 裡的圖片路徑（例如 'images/my-wallpaper.jpg'）
+        // 或者是圖片網址貼入 icon 欄位即可。
 
-        // 預設的 60x60 Base64 圖示 (一張灰色的網格圖，你可以替換它)
-        const defaultIconBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAACXBIWXMAAAsTAAALEwEAmpwYAAAC80lEQVR4nO2YTUgUURSHT+bMvDMzO6vVqkZatWpRoYgWVYsWRYUiSlQtWhQVilChChWKUKESFYpQoQgVqlChCBWKUKESFYpQoYgWVYsWRYUiVKhChSJUKESFYpQoQoUiVChChSJUqEKFIlSoQoUiVKhChSLU/x6L+p+ZmfndmR4PhvO9vMtz33333XeBBEv+YqSjA4Y6OshfDHfH94wPGR8yPhZ+Oidq7N+u2L9dsX97f48/FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV56b+n//5O3XNO1NkvbVfI/e1Hdf/FvI/Zvs9su2Rsh3n3f45p94wPNRof+ovf58R4Toxv9xrf+Yvf58R4Tozv9xrf+Yvf58R4Tozvb7O2U9tuX7XtoZ0Z67vK9fO2K+R+59bPW7Uv5H7nzs956XfO9Z+zf59Z26b7zXn3Z+zX8Z5S35v3O9m//RzX9fO6NudbT4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4l4l4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXyPkL4T44R3wH+O7w3eG7w8fCx8LHwsfCx8LHwscvPj4Y/wHw0w/x7u0Gf/tD+P4Qvt+P78/j+/P4/jy+P4/vz+P78/j+PL4/j+/P4/u4x+P+AH8C/AB/AvwAgAAAABJRU5ErkJggg==";
+        // 一個預設的 60x60 Base64 圖示 (一張灰色的網格圖，你可以替換它)
+        const defaultIcon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAACXBIWXMAAAsTAAALEwEAmpwYAAAC80lEQVR4nO2YTUgUURSHT+bMvDMzO6vVqkZatWpRoYgWVYsWRYUiSlQtWhQVilChChWKUKESFYpQoQgVqlChCBWKUKESFYpQoYgWVYsWRYUiVKhChSJUKESFYpQoQoUiVChChSJUqEKFIlSoQoUiVKhChSLU/x6L+p+ZmfndmR4PhvO9vMtz33333XeBBEv+YqSjA4Y6OshfDHfH94wPGR8yPhZ+Oidq7N+u2L9dsX97f48/FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9vPxS4//AL98S4+rGj/0AAAAASUVORK5ErkJggg==";
 
-        // [2A] 主畫面 App 列表 (你可以自由增加或減少)
+        // [2A] 主畫面 App 列表
         const homeApps = [
-            { name: "照片", icon: defaultIconBase64 },
-            { name: "設定", icon: defaultIconBase64 },
-            { name: "相機", icon: defaultIconBase64 },
-            { name: "預言", icon: defaultIconBase64, isMagic: true }, // 你可以用這行來標註你的魔術觸發點
-            { name: "App Store", icon: defaultIconBase64 },
-            { name: "地圖", icon: defaultIconBase64 },
-            { name: "時鐘", icon: defaultIconBase64 },
-            { name: "備忘錄", icon: defaultIconBase64 },
-            { name: "天氣", icon: defaultIconBase64 },
-            { name: "提醒事項", icon: defaultIconBase64 },
-            { name: "健康", icon: defaultIconBase64 },
-            { name: "錢包", icon: defaultIconBase64 },
+            { name: "照片", icon: defaultIcon },
+            { name: "設定", icon: defaultIcon },
+            { name: "相機", icon: defaultIcon },
+            { name: "預言", icon: defaultIcon },
+            { name: "App Store", icon: defaultIcon },
+            { name: "地圖", icon: defaultIcon },
+            { name: "時鐘", icon: defaultIcon },
+            { name: "備忘錄", icon: defaultIcon },
+            { name: "天氣", icon: defaultIcon },
+            { name: "提醒事項", icon: defaultIcon },
+            { name: "健康", icon: defaultIcon },
+            { name: "錢包", icon: defaultIcon },
         ];
 
         // [2B] 底部 Dock 欄 App 列表 (固定 4 個)
         const dockApps = [
-            { name: "電話", icon: defaultIconBase64 },
-            { name: "Safari", icon: defaultIconBase64 },
-            { name: "訊息", icon: defaultIconBase64 },
-            { name: "音樂", icon: defaultIconBase64 },
+            { name: "電話", icon: defaultIcon },
+            { name: "Safari", icon: defaultIcon },
+            { name: "訊息", icon: defaultIcon },
+            { name: "音樂", icon: defaultIcon },
         ];
-
-        // --- [魔術轉場邏輯] ---
-        function triggerMagicOut(appName) {
-            console.log(`點擊了 ${appName}，可以在這裡觸發魔術彈窗...`);
-            // 例如：alert("你選的牌是紅心七！");
-            // 或者：替換整個網頁內容顯示圖片。
-        }
 
 
         // --- [渲染邏輯 - 不需要修改] ---
@@ -162,31 +147,22 @@
             const wrap = document.createElement('div');
             wrap.className = 'app-icon-wrap';
             
-            // 如果是魔術觸發 App，綁定特殊事件
-            if (app.isMagic) {
-                wrap.onclick = () => triggerMagicOut(app.name);
-            }
-
             const img = document.createElement('div');
             img.className = 'app-icon-img';
             img.style.backgroundImage = `url('${app.icon}')`;
 
             wrap.appendChild(img);
 
-            // Dock 欄的 App 通常不顯示名稱文字
             if (!isDock) {
                 const label = document.createElement('div');
                 label.className = 'app-label';
                 label.innerText = app.name;
                 wrap.appendChild(label);
             }
-
             return wrap;
         }
 
-        // 渲染主畫面
         homeApps.forEach(app => homeGrid.appendChild(createAppIconElement(app)));
-        // 渲染 Dock 欄
         dockApps.forEach(app => dockBar.appendChild(createAppIconElement(app, true)));
 
     </script>
