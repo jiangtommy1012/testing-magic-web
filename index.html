@@ -6,14 +6,20 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>iPhone Home</title>
+    <title>Home Screen</title>
 
     <style>
         :root {
-            --bg-color: #1c1c1c; /* 接近圖片中的深色背景 */
-            --icon-size: 60px;
+            --bg-color: #1a1a1a; 
+            --icon-size: 62px;
             --icon-radius: 14px;
-            --dock-bg: rgba(255, 255, 255, 0.2);
+            --dock-bg: rgba(255, 255, 255, 0.25);
+            --text-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body, html {
@@ -22,26 +28,21 @@
             width: 100%;
             height: 100%;
             background-color: var(--bg-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            /* 如果你有背景圖，可以取消下面註釋 */
+            /* background-image: url('your-wallpaper.jpg'); */
+            /* background-size: cover; */
+            font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
-        /* 主桌面容器 */
-        .home-screen {
-            flex: 1;
-            width: 100%;
+        /* 主畫面 App 網格 */
+        .grid-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(6, 1fr); /* 預留空間給上方 Widget 或 App */
-            gap: 20px;
-            padding: 60px 25px 0 25px; /* 避開頂部時間列位置 */
-            box-sizing: border-box;
+            gap: 25px 15px;
+            padding: 70px 25px 0 25px; /* 頂部留出狀態欄空間 */
         }
 
-        /* App 圖示包裝 */
         .app-item {
             display: flex;
             flex-direction: column;
@@ -49,101 +50,122 @@
             text-align: center;
         }
 
-        /* App 色塊圖示 (你可以之後換成 <img>) */
+        /* App 圖示 - 之後可在此替換 background-image */
         .app-icon {
             width: var(--icon-size);
             height: var(--icon-size);
             border-radius: var(--icon-radius);
-            background-color: #555; /* 預設色塊 */
-            margin-bottom: 5px;
+            background-color: #444; 
+            margin-bottom: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             background-size: cover;
             background-position: center;
         }
 
-        .app-name {
-            color: white;
+        .app-label {
+            color: var(--text-color);
             font-size: 11px;
-            letter-spacing: 0.5px;
+            font-weight: 400;
+            white-space: nowrap;
         }
 
-        /* 下方 Dock 欄位 */
-        .dock-container {
-            width: 90%;
-            height: 95px;
+        /* 搜尋按鈕 - 位於 Dock 上方 */
+        .search-bar {
+            position: fixed;
+            bottom: 125px; /* 調整此數值可改變與 Dock 的距離 */
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 4px 14px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .search-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 12px;
+        }
+
+        /* 下方 Dock 欄位 - 強制貼底優化 */
+        .dock {
+            position: fixed;
+            bottom: 15px; /* 這是關鍵：手動壓低，無視安全區域限制 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            height: 94px;
             background-color: var(--dock-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 35px;
-            margin-bottom: 30px; /* 與螢幕底部的距離 */
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 34px;
             display: flex;
             justify-content: space-evenly;
             align-items: center;
             padding: 0 10px;
+            z-index: 999;
         }
 
-        /* 隱藏搜尋按鈕 */
-        .search-pill {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-bottom: 15px;
-        }
-
-        /* 預設幾個不同的色塊 */
-        .bg-red { background-color: #ff3b30; }
-        .bg-blue { background-color: #007aff; }
-        .bg-green { background-color: #34c759; }
-        .bg-gray { background-color: #8e8e93; }
+        /* 特殊色塊示範 */
+        .icon-system { background: linear-gradient(135deg, #5e5e5e, #2e2e2e); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px;}
+        .icon-photos { background: #fff; }
+        .icon-camera { background: #333; }
+        .icon-appstore { background: #007aff; }
+        .icon-health { background: #fff; }
+        .icon-phone { background: #34c759; }
 
     </style>
 </head>
 <body>
 
-    <div class="home-screen">
+    <div class="grid-container">
         <div class="app-item">
-            <div class="app-icon bg-gray"></div>
-            <div class="app-name">照片</div>
+            <div class="app-icon icon-photos"></div>
+            <div class="app-label">照片</div>
         </div>
         <div class="app-item">
-            <div class="app-icon bg-blue"></div>
-            <div class="app-name">相機</div>
+            <div class="app-icon icon-camera"></div>
+            <div class="app-label">相機</div>
         </div>
         <div class="app-item">
-            <div class="app-icon bg-gray"></div>
-            <div class="app-name">設定</div>
+            <div class="app-icon" style="background-color: #8e8e93;"></div>
+            <div class="app-label">設定</div>
         </div>
         <div class="app-item">
-            <div class="app-icon bg-blue"></div>
-            <div class="app-name">檔案</div>
+            <div class="app-icon" style="background-color: #007aff;"></div>
+            <div class="app-label">檔案</div>
         </div>
 
         <div class="app-item">
-            <div class="app-icon bg-gray"></div>
-            <div class="app-name">計算機</div>
+            <div class="app-icon" style="background-color: #555;"></div>
+            <div class="app-label">計算機</div>
         </div>
         <div class="app-item">
-            <div class="app-icon bg-gray"></div>
-            <div class="app-name">Abracadabra</div>
+            <div class="app-icon icon-system">A</div>
+            <div class="app-label">Abracadabra</div>
         </div>
         <div class="app-item">
-            <div class="app-icon bg-blue"></div>
-            <div class="app-name">App Store</div>
+            <div class="app-icon icon-appstore"></div>
+            <div class="app-label">App Store</div>
         </div>
         <div class="app-item">
-            <div class="app-icon bg-red"></div>
-            <div class="app-name">健康</div>
+            <div class="app-icon icon-health"></div>
+            <div class="app-label">健康</div>
         </div>
     </div>
 
-    <div class="search-pill">搜尋</div>
+    <div class="search-bar">
+        <span class="search-text">🔍 搜尋</span>
+    </div>
 
-    <div class="dock-container">
-        <div class="app-icon bg-green"></div>
-        <div class="app-icon bg-gray"></div>
-        <div class="app-icon bg-gray"></div>
-        <div class="app-icon bg-blue"></div>
+    <div class="dock">
+        <div class="app-icon icon-phone"></div>
+        <div class="app-icon" style="background-color: #8e8e93;"></div>
+        <div class="app-icon" style="background-color: #fff;"></div>
+        <div class="app-icon" style="background-color: #007aff;"></div>
     </div>
 
 </body>
