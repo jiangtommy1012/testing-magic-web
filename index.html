@@ -1,82 +1,200 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Camera</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Unlock">
+
+    <title>Unlock Magic</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, sans-serif; }
-        
-        /* 相機底層畫面 */
-        #videoFeed {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: cover; z-index: 1;
+        :root {
+            --ios-text: #ffffff;
+            --ios-blur-bg: rgba(255, 255, 255, 0.2);
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background: #000;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            user-select: none; /* 防止文字被選取 */
         }
 
-        /* UI 遮罩層 */
-        .ui-layer {
-            position: absolute; inset: 0; z-index: 10;
-            display: flex; flex-direction: column; justify-content: space-between;
-            padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
+        /* 統一的 iPhone 狀態列偽裝 */
+        .status-bar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 44px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; box-sizing: border-box;
+            color: var(--ios-text); font-size: 14px; font-weight: 600;
+            z-index: 1000;
+            pointer-events: none;
+            padding-top: env(safe-area-inset-top);
+        }
+        .status-left { margin-left: 10px; }
+        .status-right { margin-right: 10px; display: flex; gap: 5px; }
+
+        /* [1] 鎖定畫面層 ( Fake Lock Screen ) */
+        .lock-screen {
+            position: absolute; inset: 0;
+            background-color: #332117; /* 參考圖片背景色 */
+            background-image: url('data:image/png;base64,你的背景圖片BASE64'); /* 如果你要用圖片當背景 */
+            background-size: cover; background-position: center;
+            z-index: 100;
+            display: flex; flex-direction: column; align-items: center;
+            transition: transform 0.4s ease-out; /* 上滑轉場動畫 */
+            cursor: grab;
+        }
+
+        /* 鎖定圖示 */
+        .lock-icon { margin-top: 60px; font-size: 24px; color: var(--ios-text); }
+
+        /* 時間與日期 (依據你的圖片參考) */
+        .time-date-wrap {
+            margin-top: 5px; text-align: center;
+            color: var(--ios-text);
+        }
+        .date { font-size: 19px; font-weight: 500; margin-bottom: 5px; opacity: 0.9; }
+        .time { font-size: 80px; font-weight: 200; letter-spacing: -2px; }
+
+        /* 底部工具按鈕 (手電筒, 相機) */
+        .bottom-tools {
+            position: absolute; bottom: 50px; width: 100%;
+            display: flex; justify-content: space-between; padding: 0 50px;
+            box-sizing: border-box;
+        }
+        .tool-btn {
+            width: 50px; height: 50px;
+            background: rgba(0,0,0,0.3); border-radius: 50%;
+            backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px; color: var(--ios-text);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* 底部上滑提示線 */
+        .home-bar-indicator {
+            position: absolute; bottom: 8px; left: 50%;
+            transform: translateX(-50%);
+            width: 140px; height: 5px;
+            background: var(--ios-text); border-radius: 3px;
+            opacity: 0.8;
+            z-index: 101;
             pointer-events: none;
         }
 
-        /* 頂部工具列 */
-        .top-bar { height: 60px; display: flex; justify-content: space-around; align-items: center; color: white; background: rgba(0,0,0,0.2); pointer-events: auto; }
+        /* [2] 首頁層 ( Fake Home Screen ) */
+        .home-screen {
+            position: absolute; inset: 0;
+            background: #2c3e50; /* 你想要的首頁背景色 */
+            z-index: 50;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 24px;
+        }
+        /* 這裡放首頁的內容，例如一張仿 iOS 圖示的圖片 */
+        .home-content {
+            width: 100%; height: 100%;
+            background-image: url('https://via.placeholder.com/414x896/2c3e50/ffffff?text=FAKE+HOME+SCREEN'); /* 替換成首頁圖片網址 */
+            background-size: cover; background-position: center;
+        }
 
-        /* 底部控制區 */
-        .bottom-panel { background: rgba(0,0,0,0.4); padding-bottom: 20px; pointer-events: auto; }
-
-        /* 變焦按鈕 */
-        .zoom-wrap { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
-        .zoom-btn { width: 35px; height: 35px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; color: white; font-size: 10px; display: flex; align-items: center; justify-content: center; }
-        .zoom-btn.active { background: #fff; color: #000; }
-
-        /* 快門 */
-        .shutter-row { display: flex; justify-content: space-around; align-items: center; padding: 0 40px; }
-        .shutter-btn { width: 70px; height: 70px; background: white; border-radius: 50%; border: 4px solid rgba(255,255,255,0.3); }
-        .thumb { width: 45px; height: 45px; background: #333; border-radius: 8px; border: 1px solid #fff; }
-        .flip { color: white; font-size: 25px; }
-
-        /* 閃光特效 */
-        #flash { position: fixed; inset: 0; background: white; z-index: 100; opacity: 0; pointer-events: none; }
+        /* [3] 當解鎖時，鎖定畫面往上滑走 */
+        .unlocked .lock-screen {
+            transform: translateY(-100%);
+        }
     </style>
 </head>
-<body>
-    <video id="videoFeed" autoplay playsinline></video>
-    <div id="flash"></div>
+<body id="mainBody">
 
-    <div class="ui-layer">
-        <div class="top-bar">
-            <span>⚡️</span><span>HDR</span><span>LIVE</span><span>⏱</span><span>ᐁ</span>
-        </div>
-
-        <div class="bottom-panel">
-            <div class="zoom-wrap">
-                <div class="zoom-btn">0.5</div>
-                <div class="zoom-btn active">1x</div>
-                <div class="zoom-btn">2</div>
-            </div>
-            <div class="shutter-row">
-                <div class="thumb"></div>
-                <div class="shutter-btn" onclick="snap()"></div>
-                <div class="flip">🔄</div>
-            </div>
+    <div class="status-bar">
+        <div class="status-left">遠傳電信</div>
+        <div class="status-right">
+            <span class="signal">📶</span>
+            <span class="network">4G</span>
+            <span class="battery">🔋</span>
         </div>
     </div>
 
-    <script>
-        const v = document.getElementById('videoFeed');
-        // 啟動鏡頭
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(s => v.srcObject = s)
-            .catch(e => alert("請至系統設定開啟相機權限"));
+    <div class="lock-screen" id="lockScreen">
+        <div class="lock-icon">🔒</div>
+        
+        <div class="time-date-wrap">
+            <div class="date">3月26日 週四</div>
+            <div class="time">19:02</div>
+        </div>
 
-        function snap() {
-            const f = document.getElementById('flash');
-            f.style.opacity = '1';
-            setTimeout(() => f.style.opacity = '0', 100);
+        <div class="bottom-tools">
+            <div class="tool-btn">🔦</div>
+            <div class="tool-btn">📷</div>
+        </div>
+    </div>
+
+    <div class="home-screen">
+        <div class="home-content">
+            </div>
+    </div>
+
+    <div class="home-bar-indicator"></div>
+
+    <script>
+        const body = document.getElementById('mainBody');
+        const lockScreen = document.getElementById('lockScreen');
+        
+        // 滑動偵測變數
+        let startY = 0;
+        let isDragging = false;
+
+        // [核心邏輯] 偵測上滑手勢
+        
+        // 觸控開始 (手機)
+        body.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                startY = e.touches[0].clientY;
+                isDragging = true;
+            }
+        });
+
+        // 觸控移動 (手機)
+        body.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const currentY = e.touches[0].clientY;
+            const diffY = startY - currentY; // 計算上滑距離
+
+            // 如果上滑超過 50 像素，觸發解鎖
+            if (diffY > 50) {
+                unlock();
+            }
+        });
+
+        // 觸控結束 (手機)
+        body.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // 為了方便電腦測試，加入滑鼠事件
+        body.addEventListener('mousedown', (e) => {
+            startY = e.clientY;
+            isDragging = true;
+        });
+        body.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const diffY = startY - e.clientY;
+            if (diffY > 50) {
+                unlock();
+            }
+        });
+        body.addEventListener('mouseup', () => isDragging = false);
+
+
+        // [執行解鎖] 動畫轉場
+        function unlock() {
+            if (!body.classList.contains('unlocked')) {
+                body.classList.add('unlocked');
+                console.log('手機已解鎖，進到假首頁...');
+                
+                // 選配：在解鎖後播放音效或觸發下一階段魔術邏輯
+            }
         }
     </script>
 </body>
