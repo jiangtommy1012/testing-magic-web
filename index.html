@@ -57,7 +57,7 @@
         .dock {
             position: absolute; 
             /* 調整：不再過高，維持在螢幕底端稍微往上一點點的位置 */
-            bottom: calc(15px + env(safe-area-inset-bottom)); 
+            bottom: 15px; 
             left: 12px; right: 12px;
             height: 92px; 
             background: var(--dock-bg);
@@ -65,7 +65,7 @@
             border-radius: 32px;
             display: grid; grid-template-columns: repeat(4, 1fr);
             padding: 0 10px; align-items: center; justify-items: center;
-            z-index: 99; /* 確保在 Swiper 之上 */
+            z-index: 5; /* 確保在 Swiper 之上 */
         }
     </style>
 </head>
