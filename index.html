@@ -6,196 +6,189 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Unlock">
+    <meta name="apple-mobile-web-app-title" content="Home">
 
-    <title>Unlock Magic</title>
+    <title>Fake Home</title>
     <style>
         :root {
+            /* --- [🔧 自訂區域 1：桌布背景] --- */
+            /* 1. 將下面的 Base64 替換成你自己的滿版桌布圖片 */
+            /* 建議尺寸：1284x2778 像素 (iPhone 14 Plus) */
+            --home-bg-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='); /* 預設為純黑 */
+            
+            /* 如果你有圖片網址，可以用這個格式： */
+            /* --home-bg-image: url('https://your-server.com/your-wallpaper.jpg'); */
+            
             --ios-text: #ffffff;
-            --ios-blur-bg: rgba(255, 255, 255, 0.2);
+            --icon-label-font: -apple-system, sans-serif;
         }
+
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background: #000;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+            background-color: #000; /* 防止圖片載入前的閃爍 */
+            background-image: var(--home-bg-image);
+            background-size: cover; background-position: center;
+            font-family: var(--icon-label-font);
             -webkit-font-smoothing: antialiased;
             user-select: none; /* 防止文字被選取 */
         }
 
-        /* 統一的 iPhone 狀態列偽裝 */
-        .status-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 44px;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; box-sizing: border-box;
-            color: var(--ios-text); font-size: 14px; font-weight: 600;
-            z-index: 1000;
-            pointer-events: none;
+        /* [1] 頂部狀態列留空區域 */
+        .status-bar-spacer {
+            height: 60px; /* 針對 iPhone 14 Plus 動態島/瀏海區域留空 */
+            width: 100%;
+            /* 如果你想在調試時看到這個區域，可以加上 background: rgba(255,0,0,0.2); */
             padding-top: env(safe-area-inset-top);
         }
-        .status-left { margin-left: 10px; }
-        .status-right { margin-right: 10px; display: flex; gap: 5px; }
 
-        /* [1] 鎖定畫面層 ( Fake Lock Screen ) */
-        .lock-screen {
-            position: absolute; inset: 0;
-            background-color: #332117; /* 參考圖片背景色 */
-            background-image: url('data:image/png;base64,你的背景圖片BASE64'); /* 如果你要用圖片當背景 */
-            background-size: cover; background-position: center;
-            z-index: 100;
-            display: flex; flex-direction: column; align-items: center;
-            transition: transform 0.4s ease-out; /* 上滑轉場動畫 */
-            cursor: grab;
-        }
-
-        /* 鎖定圖示 */
-        .lock-icon { margin-top: 60px; font-size: 24px; color: var(--ios-text); }
-
-        /* 時間與日期 (依據你的圖片參考) */
-        .time-date-wrap {
-            margin-top: 5px; text-align: center;
-            color: var(--ios-text);
-        }
-        .date { font-size: 19px; font-weight: 500; margin-bottom: 5px; opacity: 0.9; }
-        .time { font-size: 80px; font-weight: 200; letter-spacing: -2px; }
-
-        /* 底部工具按鈕 (手電筒, 相機) */
-        .bottom-tools {
-            position: absolute; bottom: 50px; width: 100%;
-            display: flex; justify-content: space-between; padding: 0 50px;
+        /* [2] 主畫面圖示網格 */
+        .home-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 仿 iOS 4 行圖示 */
+            grid-gap: 25px 15px; /* 圖示間距：上下25px，左右15px */
+            padding: 20px 25px; /* 網格四周留白 */
             box-sizing: border-box;
         }
-        .tool-btn {
-            width: 50px; height: 50px;
-            background: rgba(0,0,0,0.3); border-radius: 50%;
-            backdrop-filter: blur(10px);
-            display: flex; justify-content: center; align-items: center;
-            font-size: 24px; color: var(--ios-text);
-            border: 1px solid rgba(255,255,255,0.1);
+
+        /* [3] 單個 App 圖示容器 */
+        .app-icon-wrap {
+            display: flex; flex-direction: column; align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .app-icon-wrap:active {
+            transform: scale(0.9); /* 按下時的縮放反饋 */
         }
 
-        /* 底部上滑提示線 */
+        /* [4] App 圖示圖片 */
+        .app-icon-img {
+            width: 60px; height: 60px; /* iPhone 14 Plus 的標準圖示大小 */
+            border-radius: 14px; /* iOS 圓角 */
+            background-size: cover; background-position: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            margin-bottom: 6px;
+            /* 防止 Base64 圖片鋸齒 */
+            image-rendering: -webkit-optimize-contrast; 
+        }
+
+        /* [5] App 名稱文字 */
+        .app-label {
+            color: var(--ios-text);
+            font-size: 11px; font-weight: 500;
+            text-align: center;
+            width: 100%;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; /* 防止長檔名破壞排版 */
+            opacity: 0.9;
+        }
+
+        /* [6] 底部 Dock 欄偽裝 */
+        .dock-bar {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            height: 100px; /* iOS Dock 高度 */
+            background: rgba(255, 255, 255, 0.2); /* 仿 iOS 的模糊背景 */
+            backdrop-filter: blur(20px); /* 關鍵：高斯模糊 */
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: grid; grid-template-columns: repeat(4, 1fr); /* Dock 通常有 4 個 App */
+            grid-gap: 15px; padding: 15px 25px; box-sizing: border-box;
+            padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* 避開底部 Home Bar */
+        }
+
+        /* [7] 底部上滑提示線 */
         .home-bar-indicator {
             position: absolute; bottom: 8px; left: 50%;
             transform: translateX(-50%);
             width: 140px; height: 5px;
             background: var(--ios-text); border-radius: 3px;
-            opacity: 0.8;
-            z-index: 101;
-            pointer-events: none;
-        }
-
-        /* [2] 首頁層 ( Fake Home Screen ) */
-        .home-screen {
-            position: absolute; inset: 0;
-            background: #2c3e50; /* 你想要的首頁背景色 */
-            z-index: 50;
-            display: flex; justify-content: center; align-items: center;
-            color: white; font-size: 24px;
-        }
-        /* 這裡放首頁的內容，例如一張仿 iOS 圖示的圖片 */
-        .home-content {
-            width: 100%; height: 100%;
-            background-image: url('https://via.placeholder.com/414x896/2c3e50/ffffff?text=FAKE+HOME+SCREEN'); /* 替換成首頁圖片網址 */
-            background-size: cover; background-position: center;
-        }
-
-        /* [3] 當解鎖時，鎖定畫面往上滑走 */
-        .unlocked .lock-screen {
-            transform: translateY(-100%);
+            opacity: 0.8; z-index: 101; pointer-events: none;
         }
     </style>
 </head>
-<body id="mainBody">
+<body>
 
-    <div class="status-bar">
-        <div class="status-left">遠傳電信</div>
-        <div class="status-right">
-            <span class="signal">📶</span>
-            <span class="network">4G</span>
-            <span class="battery">🔋</span>
-        </div>
-    </div>
+    <div class="status-bar-spacer"></div>
 
-    <div class="lock-screen" id="lockScreen">
-        <div class="lock-icon">🔒</div>
-        
-        <div class="time-date-wrap">
-            <div class="date">3月26日 週四</div>
-            <div class="time">19:02</div>
-        </div>
+    <div class="home-grid" id="homeGrid"></div>
 
-        <div class="bottom-tools">
-            <div class="tool-btn">🔦</div>
-            <div class="tool-btn">📷</div>
-        </div>
-    </div>
-
-    <div class="home-screen">
-        <div class="home-content">
-            </div>
-    </div>
+    <div class="dock-bar" id="dockBar"></div>
 
     <div class="home-bar-indicator"></div>
 
     <script>
-        const body = document.getElementById('mainBody');
-        const lockScreen = document.getElementById('lockScreen');
-        
-        // 滑動偵測變數
-        let startY = 0;
-        let isDragging = false;
+        /* --- [🔧 自訂區域 2：App 列表與圖片] --- */
+        // 在這裡修改你的 App 名稱與圖示。
+        // 我預設提供了一個基本的圖示 Base64 作為範例。
 
-        // [核心邏輯] 偵測上滑手勢
-        
-        // 觸控開始 (手機)
-        body.addEventListener('touchstart', (e) => {
-            if (e.touches.length > 0) {
-                startY = e.touches[0].clientY;
-                isDragging = true;
-            }
-        });
+        // 預設的 60x60 Base64 圖示 (一張灰色的網格圖，你可以替換它)
+        const defaultIconBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAACXBIWXMAAAsTAAALEwEAmpwYAAAC80lEQVR4nO2YTUgUURSHT+bMvDMzO6vVqkZatWpRoYgWVYsWRYUiSlQtWhQVilChChWKUKESFYpQoQgVqlChCBWKUKESFYpQoYgWVYsWRYUiVKhChSJUKESFYpQoQoUiVChChSJUqEKFIlSoQoUiVKhChSLU/x6L+p+ZmfndmR4PhvO9vMtz33333XeBBEv+YqSjA4Y6OshfDHfH94wPGR8yPhZ+Oidq7N+u2L9dsX97f48/FvV5UZ8X9Xnpf8m7F56mXf699M7O2M4Z2znTf3tU95wTdfZvt+u37fbYrhjbWdtvN9p+t9F+9/b+Hl+9FvV56b+n//5O3XNO1NkvbVfI/e1Hdf/FvI/Zvs9su2Rsh3n3f45p94wPNRof+ovf58R4Toxv9xrf+Yvf58R4Tozv9xrf+Yvf58R4Tozvb7O2U9tuX7XtoZ0Z67vK9fO2K+R+59bPW7Uv5H7nzs956XfO9Z+zf59Z26b7zXn3Z+zX8Z5S35v3O9m//RzX9fO6NudbT4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4l4l4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXiHeJeJeId4l4l4h3iXiXyPkL4T44R3wH+O7w3eG7w8fCx8LHwsfCx8LHwscvPj4Y/wHw0w/x7u0Gf/tD+P4Qvt+P78/j+/P4/jy+P4/vz+P78/j+PL4/j+/P4/u4x+P+AH8C/AB/AvwAgAAAABJRU5ErkJggg==";
 
-        // 觸控移動 (手機)
-        body.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            const currentY = e.touches[0].clientY;
-            const diffY = startY - currentY; // 計算上滑距離
+        // [2A] 主畫面 App 列表 (你可以自由增加或減少)
+        const homeApps = [
+            { name: "照片", icon: defaultIconBase64 },
+            { name: "設定", icon: defaultIconBase64 },
+            { name: "相機", icon: defaultIconBase64 },
+            { name: "預言", icon: defaultIconBase64, isMagic: true }, // 你可以用這行來標註你的魔術觸發點
+            { name: "App Store", icon: defaultIconBase64 },
+            { name: "地圖", icon: defaultIconBase64 },
+            { name: "時鐘", icon: defaultIconBase64 },
+            { name: "備忘錄", icon: defaultIconBase64 },
+            { name: "天氣", icon: defaultIconBase64 },
+            { name: "提醒事項", icon: defaultIconBase64 },
+            { name: "健康", icon: defaultIconBase64 },
+            { name: "錢包", icon: defaultIconBase64 },
+        ];
 
-            // 如果上滑超過 50 像素，觸發解鎖
-            if (diffY > 50) {
-                unlock();
-            }
-        });
+        // [2B] 底部 Dock 欄 App 列表 (固定 4 個)
+        const dockApps = [
+            { name: "電話", icon: defaultIconBase64 },
+            { name: "Safari", icon: defaultIconBase64 },
+            { name: "訊息", icon: defaultIconBase64 },
+            { name: "音樂", icon: defaultIconBase64 },
+        ];
 
-        // 觸控結束 (手機)
-        body.addEventListener('touchend', () => {
-            isDragging = false;
-        });
-
-        // 為了方便電腦測試，加入滑鼠事件
-        body.addEventListener('mousedown', (e) => {
-            startY = e.clientY;
-            isDragging = true;
-        });
-        body.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            const diffY = startY - e.clientY;
-            if (diffY > 50) {
-                unlock();
-            }
-        });
-        body.addEventListener('mouseup', () => isDragging = false);
-
-
-        // [執行解鎖] 動畫轉場
-        function unlock() {
-            if (!body.classList.contains('unlocked')) {
-                body.classList.add('unlocked');
-                console.log('手機已解鎖，進到假首頁...');
-                
-                // 選配：在解鎖後播放音效或觸發下一階段魔術邏輯
-            }
+        // --- [魔術轉場邏輯] ---
+        function triggerMagicOut(appName) {
+            console.log(`點擊了 ${appName}，可以在這裡觸發魔術彈窗...`);
+            // 例如：alert("你選的牌是紅心七！");
+            // 或者：替換整個網頁內容顯示圖片。
         }
+
+
+        // --- [渲染邏輯 - 不需要修改] ---
+        const homeGrid = document.getElementById('homeGrid');
+        const dockBar = document.getElementById('dockBar');
+
+        function createAppIconElement(app, isDock = false) {
+            const wrap = document.createElement('div');
+            wrap.className = 'app-icon-wrap';
+            
+            // 如果是魔術觸發 App，綁定特殊事件
+            if (app.isMagic) {
+                wrap.onclick = () => triggerMagicOut(app.name);
+            }
+
+            const img = document.createElement('div');
+            img.className = 'app-icon-img';
+            img.style.backgroundImage = `url('${app.icon}')`;
+
+            wrap.appendChild(img);
+
+            // Dock 欄的 App 通常不顯示名稱文字
+            if (!isDock) {
+                const label = document.createElement('div');
+                label.className = 'app-label';
+                label.innerText = app.name;
+                wrap.appendChild(label);
+            }
+
+            return wrap;
+        }
+
+        // 渲染主畫面
+        homeApps.forEach(app => homeGrid.appendChild(createAppIconElement(app)));
+        // 渲染 Dock 欄
+        dockApps.forEach(app => dockBar.appendChild(createAppIconElement(app, true)));
+
     </script>
 </body>
 </html>
