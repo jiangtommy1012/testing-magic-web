@@ -10,7 +10,11 @@
 
     <style>
         :root {
-            --bg-color: #1a1a1a; 
+            /* --- 背景圖設定區 --- */
+            /* 圖片網址路徑，請更換為 images 資料夾內的檔名 */
+            --bg-image: url('images/wallpaper.jpg');
+            
+            /* --- 變數與樣式設定 --- */
             --icon-size: 62px;
             --icon-radius: 14px;
             --dock-bg: rgba(255, 255, 255, 0.25);
@@ -23,16 +27,20 @@
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-color);
-            /* 如果你有背景圖，可以取消下面註釋 */
-            /* background-image: url('your-wallpaper.jpg'); */
-            /* background-size: cover; */
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            /* 設置基礎背景色，防止圖片載入前出現白屏 */
+            background-color: #1a1a1a;
+            
+            /* --- 全螢幕背景圖設定 --- */
+            background-image: var(--bg-image);
+            background-size: cover;    /* 確保圖片填滿螢幕 */
+            background-position: center; /* 居中 */
+            background-repeat: no-repeat;
+            
             font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
             overflow: hidden;
+            position: relative;
         }
 
         /* 主畫面 App 網格 */
@@ -40,7 +48,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 25px 15px;
-            padding: 70px 25px 0 25px; /* 頂部留出狀態欄空間 */
+            padding: 70px 25px 0 25px; 
         }
 
         .app-item {
@@ -50,14 +58,15 @@
             text-align: center;
         }
 
-        /* App 圖示 - 之後可在此替換 background-image */
+        /* App 圖示 */
         .app-icon {
             width: var(--icon-size);
             height: var(--icon-size);
             border-radius: var(--icon-radius);
-            background-color: #444; 
             margin-bottom: 6px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: relative;
+            /* 基礎圖片樣式設定 */
             background-size: cover;
             background-position: center;
         }
@@ -65,35 +74,25 @@
         .app-label {
             color: var(--text-color);
             font-size: 11px;
-            font-weight: 400;
             white-space: nowrap;
         }
 
-        /* 搜尋按鈕 - 位於 Dock 上方 */
+        /* 搜尋按鈕 */
         .search-bar {
             position: fixed;
-            bottom: 125px; /* 調整此數值可改變與 Dock 的距離 */
+            bottom: 125px; 
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.18);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            padding: 4px 14px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            padding: 4px 14px; border-radius: 20px;
         }
 
-        .search-text {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 12px;
-        }
-
-        /* 下方 Dock 欄位 - 強制貼底優化 */
+        /* 下方 Dock */
         .dock {
             position: fixed;
-            bottom: 0px; /* 這是關鍵：手動壓低，無視安全區域限制 */
+            bottom: 15px; 
             left: 50%;
             transform: translateX(-50%);
             width: 92%;
@@ -109,13 +108,85 @@
             z-index: 999;
         }
 
-        /* 特殊色塊示範 */
-        .icon-system { background: linear-gradient(135deg, #5e5e5e, #2e2e2e); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px;}
-        .icon-photos { background: #fff; }
-        .icon-camera { background: #333; }
-        .icon-appstore { background: #007aff; }
-        .icon-health { background: #fff; }
-        .icon-phone { background: #34c759; }
+        /* ========================================= */
+        /* --- 圖片路徑設定區 (CSS Classes) --- */
+        /* ========================================= */
+        
+        /* 1. 照片 App */
+        .icon-photos {
+            /* 如果有 icon-photos.png，請更換並啟用此行 */
+            /* background-image: url('images/icon-photos.png'); */
+            /* 如果你沒有，我提供一個漸層色演示 */
+            background: linear-gradient(135deg, #fff 0%, #eee 100%);
+        }
+
+        /* 2. 相機 App (使用上一版的 image_8.png) */
+        .icon-camera {
+            /* 將你的相機圖片更換並放入 images 資料夾內 */
+            background-image: url('images/icon-camera.png'); 
+            background-color: #fff;
+        }
+
+        /* 3. 設定 App */
+        .icon-setting {
+            background-image: url('images/icon-setting.png');
+            background-color: #8e8e93; /* 預設灰 */
+        }
+
+        /* 4. 檔案 App */
+        .icon-files {
+            background-image: url('images/icon-files.png');
+            background-color: #007aff; /* 預設藍 */
+        }
+
+        /* 5. 計算機 App */
+        .icon-calculator {
+            background-image: url('images/icon-calculator.png');
+            background-color: #555; /* 預設灰 */
+        }
+
+        /* 6. 特殊圖示 (Abracadabra A) */
+        .icon-abr {
+            background-image: url('images/icon-abr.png');
+            /* 如果你沒有，我提供一個金屬漸層演示 */
+            /* background: linear-gradient(135deg, #5e5e5e, #2e2e2e);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; font-size: 24px; */
+        }
+
+        /* 7. App Store */
+        .icon-appstore {
+            background-image: url('images/icon-appstore.png');
+            background-color: #007aff; /* 預設藍 */
+        }
+
+        /* 8. 健康 App */
+        .icon-health {
+            background-image: url('images/icon-health.png');
+            background-color: #fff; /* 預設白 */
+        }
+
+        /* ------------------------------------- */
+        /* --- Dock 圖片路徑設定區 --- */
+        /* ------------------------------------- */
+
+        /* Dock - 電話圖示 */
+        .icon-phone {
+            background-image: url('images/icon-phone.png');
+            background-color: #34c759; /* 預設綠 */
+        }
+
+        /* Dock - 設定圖示 (示範一個 App 的設定圖示) */
+        .icon-setting-dock {
+            background-image: url('images/icon-setting-dock.png');
+            background-color: #8e8e93; /* 預設灰 */
+        }
+
+        /* Dock - 檔案圖示 (示範一個 App 的檔案圖示) */
+        .icon-files-dock {
+            background-image: url('images/icon-files-dock.png');
+            background-color: #007aff; /* 預設藍 */
+        }
 
     </style>
 </head>
@@ -131,20 +202,20 @@
             <div class="app-label">相機</div>
         </div>
         <div class="app-item">
-            <div class="app-icon" style="background-color: #8e8e93;"></div>
+            <div class="app-icon icon-setting"></div>
             <div class="app-label">設定</div>
         </div>
         <div class="app-item">
-            <div class="app-icon" style="background-color: #007aff;"></div>
+            <div class="app-icon icon-files"></div>
             <div class="app-label">檔案</div>
         </div>
 
         <div class="app-item">
-            <div class="app-icon" style="background-color: #555;"></div>
+            <div class="app-icon icon-calculator"></div>
             <div class="app-label">計算機</div>
         </div>
         <div class="app-item">
-            <div class="app-icon icon-system">A</div>
+            <div class="app-icon icon-abr">A</div>
             <div class="app-label">Abracadabra</div>
         </div>
         <div class="app-item">
@@ -163,8 +234,8 @@
 
     <div class="dock">
         <div class="app-icon icon-phone"></div>
-        <div class="app-icon" style="background-color: #8e8e93;"></div>
-        <div class="app-icon" style="background-color: #fff;"></div>
+        <div class="app-icon icon-setting-dock"></div>
+        <div class="app-icon icon-files-dock"></div>
         <div class="app-icon" style="background-color: #007aff;"></div>
     </div>
 
