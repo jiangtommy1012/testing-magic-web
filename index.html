@@ -3,122 +3,110 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+    <title>Home</title>
     <style>
         :root {
-            /* --- [🔧 自訂區域：在這裡貼上桌布 Base64] --- */
-            --wallpaper: url('data:image/png;base64,這裡貼上桌布');
-            --ios-text: #ffffff;
+            /* --- [🔧 自訂區域：在這裡貼上你 image_7.png 桌布的 Base64] --- */
+            --home-wallpaper: url('data:image/png;base64,這裡貼上你桌布資料');
         }
 
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
-            position: fixed;
-            /* 背景自動適應比例 */
-            background: #000 var(--wallpaper) no-repeat center center / cover;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; position: fixed;
+            background: #000 var(--home-wallpaper) no-repeat center center / cover;
+            font-family: -apple-system, sans-serif; -webkit-font-smoothing: antialiased;
+            user-select: none;
         }
 
-        /* 1. 自動適配頂部：避開不同型號的狀態列高度 */
-        .top-spacer {
-            /* 使用 env 自動偵測狀態列高度，並額外增加 10px 留白 */
-            height: calc(10px + env(safe-area-inset-top)); 
-            min-height: 44px; /* 舊款 iPhone 的最低高度補償 */
-            width: 100%;
-        }
+        /* 1. 狀態列留空 */
+        .status-spacer { height: calc(10px + env(safe-area-inset-top)); width: 100%; }
 
-        /* 2. 彈性網格：App 圖示會根據螢幕寬度自動排列 */
+        /* 2. 主網格圖示 */
         .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-gap: 4vh 4vw; /* 使用視窗單位，讓間距隨螢幕大小縮放 */
-            padding: 2vh 6vw;
-            width: 100%;
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            grid-gap: 20px 15px; padding: 10px 25px;
         }
-
-        .app-item {
-            display: flex; flex-direction: column; align-items: center;
+        .app-item { display: flex; flex-direction: column; align-items: center; }
+        .icon-box {
+            width: 60px; height: 60px; border-radius: 14px;
+            background-color: rgba(255,255,255,0.1); /* 佔位用 */
+            background-size: cover; margin-bottom: 5px;
         }
-
-        .icon {
-            /* 針對不同螢幕寬度，保持圖示比例 */
-            width: 15vw; height: 15vw;
-            max-width: 62px; max-height: 62px;
-            min-width: 50px; min-height: 50px;
-            border-radius: 22%; /* 完美的 iOS 圓角比例 */
-            background-color: rgba(255,255,255,0.1);
-            background-size: cover;
-            margin-bottom: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .label {
-            color: var(--ios-text);
-            font-size: 11px;
-            font-weight: 500;
-            text-align: center;
-            width: 100%;
-            white-space: nowrap;
+        .app-label {
+            color: #fff; font-size: 11px; font-weight: 500; text-align: center;
             text-shadow: 0 1px 3px rgba(0,0,0,0.6);
         }
 
-        /* 3. [核心修正] 自動適配底部 Dock */
-        .dock-wrapper {
-            position: absolute;
-            bottom: 0; left: 0; width: 100%;
-            /* 自動根據是否有 Home Bar 延伸高度 */
-            height: calc(85px + env(safe-area-inset-bottom));
+        /* 3. [核心修正]：Dock 欄 (仿 image_7.png 佈局) */
+        .dock-container {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            /* 修正為真正全螢幕：高度延伸至物理邊緣 */
+            height: calc(90px + env(safe-area-inset-bottom));
             background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
             
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            padding: 15px 5vw env(safe-area-inset-bottom); /* 底部填充自動適配物理邊緣 */
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            grid-gap: 15px; padding: 15px 25px calc(15px + env(safe-area-inset-bottom));
             
-            border-top: 0.3px solid rgba(255,255,255,0.2);
+            border-top: 0.3px solid rgba(255,255,255,0.15);
             z-index: 100;
+        }
+
+        /* 通知紅點 (用 CSS 畫) */
+        .notification-badge {
+            position: absolute; top: -10px; right: -10px;
+            min-width: 20px; height: 20px; border-radius: 10px;
+            background-color: #ff3b30; color: white;
+            font-size: 12px; font-weight: 700;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0 4px; box-sizing: content-box;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
     </style>
 </head>
 <body>
-    <div class="top-spacer"></div>
+    <div class="status-spacer"></div>
     <div class="grid" id="homeGrid"></div>
-    <div class="dock-wrapper" id="dockBar"></div>
+
+    <div class="dock-container">
+        <div class="app-item" style="position: relative;">
+            <div class="icon-box" style="background-color: #ddd;">
+                </div>
+            <div class="notification-badge">1</div>
+        </div>
+        <div class="app-item">
+            <div class="icon-box" style="background-color: #ddd;">
+                </div>
+        </div>
+        <div class="app-item">
+            <div class="icon-box" style="background-color: #ddd;">
+                </div>
+        </div>
+        <div class="app-item" style="position: relative;">
+            <div class="icon-box" style="background-color: #ddd;">
+                </div>
+            <div class="notification-badge">3,997</div>
+        </div>
+    </div>
 
     <script>
-        // 設定 App 資料夾
-        const appList = [
-            { name: "照片", icon: "" }, { name: "設定", icon: "" },
-            { name: "相機", icon: "" }, { name: "預言", icon: "" },
-            { name: "App Store", icon: "" }, { name: "地圖", icon: "" },
-            { name: "時鐘", icon: "" }, { name: "備忘錄", icon: "" }
+        // 生成主網格的 App (可自由增減)
+        const apps = [
+            { name: "照片", icon: "" }, { name: "設定", icon: "" }, { name: "相機", icon: "" }, { name: "Abracadabra", icon: "" },
+            { name: "App Store", icon: "" }, { name: "地圖", icon: "" }, { name: "時鐘", icon: "" }, { name: "備忘錄", icon: "" }
         ];
-
         const grid = document.getElementById('homeGrid');
-        appList.forEach(app => {
+        apps.forEach(app => {
             grid.innerHTML += `
                 <div class="app-item">
-                    <div class="icon" style="background-image: url('${app.icon}')"></div>
+                    <div class="icon-box" style="background-image: url('${app.icon}')"></div>
                     <div class="label">${app.name}</div>
                 </div>`;
         });
-
-        // 底部 Dock 預設 4 個
-        const dock = document.getElementById('dockBar');
-        for(let i=0; i<4; i++) {
-            dock.innerHTML += `<div class="app-item"><div class="icon"></div></div>`;
-        }
     </script>
 </body>
 </html>
