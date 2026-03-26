@@ -6,7 +6,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Home Screen</title>
-
     <style>
         :root {
             --bg-color: #1a1a1a; 
@@ -25,7 +24,6 @@
             position: relative;
         }
 
-        /* 網格內容保持不變 */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -34,20 +32,16 @@
         }
 
         .app-item { display: flex; flex-direction: column; align-items: center; }
-
         .app-icon {
             width: var(--icon-size); height: var(--icon-size);
             border-radius: var(--icon-radius);
             background-color: #444; margin-bottom: 6px;
-            background-size: cover; background-position: center;
         }
-
         .app-label { color: var(--text-color); font-size: 11px; }
 
-        /* 搜尋按鈕也稍微調低一點，配合 Dock 下移 */
         .search-bar {
             position: absolute;
-            bottom: 125px; 
+            bottom: 115px; /* 隨 Dock 下移也稍微調低 */
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.15);
@@ -55,36 +49,32 @@
             padding: 4px 14px; border-radius: 20px;
         }
 
-        /* 關鍵：絕對定位、負值 Bottom 的 Dock */
+        /* 最終調整：下壓 -25px，並補償 padding */
         .dock {
             position: absolute;
-            bottom: -10px;   /* 使用負值下壓，確保背景越過邊界消失在底部 */
+            bottom: -25px;   /* 將 Dock 整塊往下「沉」 */
             left: 50%;
             transform: translateX(-50%);
             width: 92%;
-            height: 105px;  /* 增加總高度補償負值位移 */
+            height: 110px;  
             background-color: var(--dock-bg);
             backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
             border-radius: 35px;
             display: flex;
             justify-content: space-evenly;
             align-items: center;
-            padding: 0 10px 15px 10px; /* 增加底部內距把圖示撐高，補償負值 */
+            padding: 0 10px 25px 10px; /* 這裡的 padding 會把圖示往上「推」回視覺中心 */
             z-index: 999;
         }
 
-        /* 色塊示範 */
-        .icon-photos { background: #fff; }
-        .icon-camera { background: #333; }
         .icon-system { background: #5e5e5e; display: flex; align-items: center; justify-content: center; color: white; }
 
     </style>
 </head>
 <body>
-
     <div class="grid-container">
-        <div class="app-item"><div class="app-icon icon-photos"></div><div class="app-label">照片</div></div>
-        <div class="app-item"><div class="app-icon icon-camera"></div><div class="app-label">相機</div></div>
+        <div class="app-item"><div class="app-icon" style="background-color: #fff;"></div><div class="app-label">照片</div></div>
+        <div class="app-item"><div class="app-icon" style="background-color: #333;"></div><div class="app-label">相機</div></div>
         <div class="app-item"><div class="app-icon" style="background-color: #8e8e93;"></div><div class="app-label">設定</div></div>
         <div class="app-item"><div class="app-icon" style="background-color: #007aff;"></div><div class="app-label">檔案</div></div>
         <div class="app-item"><div class="app-icon" style="background-color: #555;"></div><div class="app-label">計算機</div></div>
@@ -99,6 +89,5 @@
         <div class="app-icon" style="background-color: #fff;"></div>
         <div class="app-icon" style="background-color: #007aff;"></div>
     </div>
-
 </body>
 </html>
