@@ -3,88 +3,97 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style>
         :root {
-            /* 1. 在這裡填入你的桌布 Base64 */
-            --wallpaper: url('data:image/png;base64,貼在這裡');
+            /* 在這裡填入你的桌布 Base64 */
+            --wallpaper: url('data:image/png;base64,你的桌布資料');
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body, html {
-            margin: 0; padding: 0; 
-            width: 100vw; height: 100vh;
-            overflow: hidden;
+            margin: 0; padding: 0;
+            width: 100%;
+            height: 100%;
+            /* 鎖定視窗高度，防止橡皮筋回彈效果 */
+            overflow: hidden; 
+            position: fixed; 
             background: #000 var(--wallpaper) no-repeat center center / cover;
-            font-family: -apple-system, sans-serif;
         }
 
-        /* 頂部避開真正的系統狀態列 */
-        .top-spacer { 
-            height: calc(55px + env(safe-area-inset-top)); 
+        /* 1. 頂部空間：避開真正的時間訊號列 */
+        .top-spacer {
+            height: calc(50px + env(safe-area-inset-top));
+            width: 100%;
         }
 
-        /* App 圖示網格 */
+        /* 2. 圖示網格：適度下移 */
         .grid {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            grid-gap: 20px 15px; padding: 10px 25px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 25px 15px;
+            padding: 10px 25px;
         }
-        .app { display: flex; flex-direction: column; align-items: center; }
-        .icon {
-            width: 60px; height: 60px; border-radius: 14px;
-            background-color: rgba(255,255,255,0.1); /* 預設灰色 */
-            background-size: cover; margin-bottom: 5px;
-        }
-        .label { color: #fff; font-size: 11px; font-weight: 500; text-align: center; }
 
-        /* 修正後的底部 Dock */
-        .dock {
-            position: absolute; 
-            bottom: 0; /* 強制貼齊底部邊緣 */
-            left: 0; width: 100%;
-            /* 稍微加高以確保延伸至螢幕最底 */
-            height: calc(95px + env(safe-area-inset-bottom)); 
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            padding: 15px 25px env(safe-area-inset-bottom);
-            box-sizing: border-box;
-            /* 移除多餘的邊框或陰影 */
-            border-top: 0.5px solid rgba(255,255,255,0.2);
+        .icon {
+            width: 60px; height: 60px;
+            border-radius: 14px;
+            background-color: rgba(255,255,255,0.1);
+            background-size: cover;
+            margin: 0 auto 5px;
         }
+
+        .label {
+            color: #fff; font-size: 11px; font-weight: 500;
+            text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* 3. [關鍵修正]：Dock 欄必須強行突破 Safe Area */
+        .dock-container {
+            position: absolute;
+            /* 關鍵：設為 0 會留縫隙，設為負值或配合 padding 延伸 */
+            bottom: 0; 
+            left: 0;
+            width: 100%;
+            /* 增加高度，使其延伸到螢幕物理邊緣之外 */
+            height: calc(95px + env(safe-area-inset-bottom)); 
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            padding: 18px 25px 0; /* 頂部留白，底部不留 */
+            
+            /* 確保背景色塗滿整個底部，包含 Home Bar 區域 */
+            border-top: 0.3px solid rgba(255,255,255,0.2);
+        }
+
+        /* 移除之前手畫的 Home Bar，因為 PWA 會自帶一條細細的白線/黑線 */
     </style>
 </head>
 <body>
     <div class="top-spacer"></div>
     <div class="grid" id="homeGrid"></div>
-    <div class="dock" id="dockBar"></div>
+    
+    <div class="dock-container" id="dockBar"></div>
 
     <script>
-        // 你可以把 App 的圖示也轉成 Base64 填在這裡
-        const apps = [
-            { name: "照片", icon: "" },
-            { name: "設定", icon: "" },
-            { name: "相機", icon: "" },
-            { name: "預言", icon: "" }
-        ];
-
-        const target = document.getElementById('homeGrid');
-        apps.forEach(app => {
-            const div = document.createElement('div');
-            div.className = 'app';
-            div.innerHTML = `<div class="icon" style="background-image: url('${app.icon}')"></div><div class="label">${app.name}</div>`;
-            target.appendChild(div);
+        // 自動生成圖示的邏輯 (可隨意增減)
+        const apps = ["照片", "設定", "相機", "預言", "App Store", "地圖", "時鐘", "備忘錄"];
+        const grid = document.getElementById('homeGrid');
+        apps.forEach(name => {
+            grid.innerHTML += `<div class="app"><div class="icon"></div><div class="label">${name}</div></div>`;
         });
 
-        // 底部四個常用 App
-        const dockApps = [ {icon:""}, {icon:""}, {icon:""}, {icon:""} ];
-        const dockTarget = document.getElementById('dockBar');
-        dockApps.forEach(app => {
-            const div = document.createElement('div');
-            div.className = 'app';
-            div.innerHTML = `<div class="icon" style="background-image: url('${app.icon}')"></div>`;
-            dockTarget.appendChild(div);
-        });
+        const dock = document.getElementById('dockBar');
+        for(let i=0; i<4; i++) {
+            dock.innerHTML += `<div class="app"><div class="icon"></div></div>`;
+        }
     </script>
 </body>
 </html>
