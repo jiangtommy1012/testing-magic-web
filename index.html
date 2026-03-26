@@ -10,11 +10,10 @@
 
     <style>
         :root {
-            /* --- 背景圖設定區 --- */
-            /* 圖片網址路徑，請更換為 images 資料夾內的檔名 */
+            /* 背景圖路徑 */
             --bg-image: url('images/wallpaper.jpg');
             
-            /* --- 變數與樣式設定 --- */
+            /* 尺寸與顏色變數 */
             --icon-size: 62px;
             --icon-radius: 14px;
             --dock-bg: rgba(255, 255, 255, 0.25);
@@ -23,32 +22,37 @@
 
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color: transparent; /* 移除點擊高亮 */
         }
 
         body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100vh;
-            /* 設置基礎背景色，防止圖片載入前出現白屏 */
-            background-color: #1a1a1a;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh; /* 解決底部留白問題 */
+            overflow: hidden; /* 防止內容溢出滾動 */
             
-            /* --- 全螢幕背景圖設定 --- */
+            /* 背景設定 */
+            background-color: #1a1a1a;
             background-image: var(--bg-image);
-            background-size: cover;    /* 確保圖片填滿螢幕 */
-            background-position: center; /* 居中 */
+            background-size: cover;
+            background-position: center;
             background-repeat: no-repeat;
             
-            font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
-            overflow: hidden;
+            /* 鎖定行為 */
+            overscroll-behavior: none; 
+            touch-action: none; 
+            
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
             position: relative;
         }
 
-        /* 主畫面 App 網格 */
+        /* App 網格佈局 */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 25px 15px;
-            padding: 70px 25px 0 25px; 
+            padding: 75px 25px 0 25px; 
         }
 
         .app-item {
@@ -58,22 +62,21 @@
             text-align: center;
         }
 
-        /* App 圖示 */
         .app-icon {
             width: var(--icon-size);
             height: var(--icon-size);
             border-radius: var(--icon-radius);
             margin-bottom: 6px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            position: relative;
-            /* 基礎圖片樣式設定 */
             background-size: cover;
             background-position: center;
+            position: relative;
         }
 
         .app-label {
             color: var(--text-color);
             font-size: 11px;
+            font-weight: 400;
             white-space: nowrap;
         }
 
@@ -86,13 +89,16 @@
             background: rgba(255, 255, 255, 0.18);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            padding: 4px 14px; border-radius: 20px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
         }
 
-        /* 下方 Dock */
+        /* --- 下方 Dock --- */
         .dock {
             position: fixed;
-            bottom: 10px; 
+            bottom: 15px; /* 依照你的要求改為 10px */
             left: 50%;
             transform: translateX(-50%);
             width: 92%;
@@ -108,89 +114,20 @@
             z-index: 999;
         }
 
-        /* ========================================= */
-        /* --- 圖片路徑設定區 (CSS Classes) --- */
-        /* ========================================= */
-        
-        /* 1. 照片 App */
-        .icon-photos {
-            /* 如果有 icon-photos.png，請更換並啟用此行 */
-            /* background-image: url('images/icon-photos.png'); */
-            /* 如果你沒有，我提供一個漸層色演示 */
-            background: linear-gradient(135deg, #fff 0%, #eee 100%);
-        }
-
-        /* 2. 相機 App (使用上一版的 image_8.png) */
-        .icon-camera {
-            /* 將你的相機圖片更換並放入 images 資料夾內 */
-            background-image: url('images/icon-camera.png'); 
-            background-color: #fff;
-        }
-
-        /* 3. 設定 App */
-        .icon-setting {
-            background-image: url('images/icon-setting.png');
-            background-color: #8e8e93; /* 預設灰 */
-        }
-
-        /* 4. 檔案 App */
-        .icon-files {
-            background-image: url('images/icon-files.png');
-            background-color: #007aff; /* 預設藍 */
-        }
-
-        /* 5. 計算機 App */
-        .icon-calculator {
-            background-image: url('images/icon-calculator.png');
-            background-color: #555; /* 預設灰 */
-        }
-
-        /* 6. 特殊圖示 (Abracadabra A) */
-        .icon-abr {
-            background-image: url('images/icon-abr.png');
-            /* 如果你沒有，我提供一個金屬漸層演示 */
-            /* background: linear-gradient(135deg, #5e5e5e, #2e2e2e);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: bold; font-size: 24px; */
-        }
-
-        /* 7. App Store */
-        .icon-appstore {
-            background-image: url('images/icon-appstore.png');
-            background-color: #007aff; /* 預設藍 */
-        }
-
-        /* 8. 健康 App */
-        .icon-health {
-            background-image: url('images/icon-health.png');
-            background-color: #fff; /* 預設白 */
-        }
-
-        /* ------------------------------------- */
-        /* --- Dock 圖片路徑設定區 --- */
-        /* ------------------------------------- */
-
-        /* Dock - 電話圖示 */
-        .icon-phone {
-            background-image: url('images/icon-phone.png');
-            background-color: #34c759; /* 預設綠 */
-        }
-
-        /* Dock - 設定圖示 (示範一個 App 的設定圖示) */
-        .icon-setting-dock {
-            background-image: url('images/icon-setting-dock.png');
-            background-color: #8e8e93; /* 預設灰 */
-        }
-
-        /* Dock - 檔案圖示 (示範一個 App 的檔案圖示) */
-        .icon-files-dock {
-            background-image: url('images/icon-files-dock.png');
-            background-color: #007aff; /* 預設藍 */
-        }
+        /* --- 各個 Icon 圖片設定 --- */
+        .icon-photos { background-image: url('images/icon-photos.png'); background-color: #fff; }
+        .icon-camera { background-image: url('images/icon-camera.png'); background-color: #fff; }
+        .icon-setting { background-image: url('images/icon-setting.png'); background-color: #8e8e93; }
+        .icon-files { background-image: url('images/icon-files.png'); background-color: #007aff; }
+        .icon-calculator { background-image: url('images/icon-calculator.png'); background-color: #555; }
+        .icon-abr { background-image: url('images/icon-abr.png'); background-color: #5e5e5e; }
+        .icon-appstore { background-image: url('images/icon-appstore.png'); background-color: #007aff; }
+        .icon-health { background-image: url('images/icon-health.png'); background-color: #fff; }
+        .icon-phone { background-image: url('images/icon-phone.png'); background-color: #34c759; }
 
     </style>
 </head>
-<body>
+<body scroll="no">
 
     <div class="grid-container">
         <div class="app-item">
@@ -215,7 +152,7 @@
             <div class="app-label">計算機</div>
         </div>
         <div class="app-item">
-            <div class="app-icon icon-abr">A</div>
+            <div class="app-icon icon-abr"></div>
             <div class="app-label">Abracadabra</div>
         </div>
         <div class="app-item">
@@ -229,15 +166,25 @@
     </div>
 
     <div class="search-bar">
-        <span class="search-text">🔍 搜尋</span>
+        <span style="color: rgba(255,255,255,0.9); font-size: 12px;">🔍 搜尋</span>
     </div>
 
     <div class="dock">
         <div class="app-icon icon-phone"></div>
-        <div class="app-icon icon-setting-dock"></div>
-        <div class="app-icon icon-files-dock"></div>
-        <div class="app-icon" style="background-color: #007aff;"></div>
+        <div class="app-icon icon-setting"></div>
+        <div class="app-icon icon-photos"></div>
+        <div class="app-icon icon-files"></div>
     </div>
+
+    <script>
+        // 阻止整個頁面的觸控滑動行為
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+
+        // 如果未來有需要點擊 App Icon 觸發魔術，可以在這裡加上監聽
+        console.log("iOS Home Screen 模擬器已啟動，滑動已鎖定。");
+    </script>
 
 </body>
 </html>
