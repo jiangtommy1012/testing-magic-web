@@ -1,204 +1,150 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="System">
+    <title>iPhone Home</title>
 
-    <title>System</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         :root {
-            /* 背景圖片路徑，可以替換為你的圖片 */
-            --bg-image: url('./images/background.jpg');
-            /* 如果沒有背景圖，使用漸層色 */
-            --ios-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-color: #1c1c1c; /* 接近圖片中的深色背景 */
+            --icon-size: 60px;
+            --icon-radius: 14px;
+            --dock-bg: rgba(255, 255, 255, 0.2);
         }
+
         body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background: #000;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-        /* 主螢幕容器 */
-        .iphone-screen {
-            width: 100%; 
+            margin: 0;
+            padding: 0;
+            width: 100%;
             height: 100%;
-            background: var(--ios-bg);
-            background-image: var(--bg-image);
+            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 主桌面容器 */
+        .home-screen {
+            flex: 1;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(6, 1fr); /* 預留空間給上方 Widget 或 App */
+            gap: 20px;
+            padding: 60px 25px 0 25px; /* 避開頂部時間列位置 */
+            box-sizing: border-box;
+        }
+
+        /* App 圖示包裝 */
+        .app-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* App 色塊圖示 (你可以之後換成 <img>) */
+        .app-icon {
+            width: var(--icon-size);
+            height: var(--icon-size);
+            border-radius: var(--icon-radius);
+            background-color: #555; /* 預設色塊 */
+            margin-bottom: 5px;
             background-size: cover;
             background-position: center;
-            position: relative;
-            overflow: hidden;
-            display: flex; 
-            flex-direction: column;
         }
-        /* Swiper 容器 (桌面) */
-        .swiper { 
-            width: 100%; 
-            height: 100%;
-            padding-bottom: 120px; /* 為底座留空間 */
-        }
-        .swiper-slide { display: flex; justify-content: center; align-items: flex-start; }
-        
-        /* App 網格排列 (確保 Swiper 滑動運作) */
-        .app-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            padding: 20px 15px; grid-gap: 20px 15px; width: 100%;
-            pointer-events: auto; /* 確保 App 可以被點擊 */
-        }
-        /* App 圖示 */
-        .app { text-align: center; cursor: pointer; transition: transform 0.1s; pointer-events: auto; }
-        .app:active { transform: scale(0.9); } /* 點擊縮小動畫 */
-        .icon {
-            width: 60px; height: 60px; border-radius: 14px;
-            background-size: cover; 
-            background-position: center;
-            margin: 0 auto;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            pointer-events: none; /* 讓點擊事件穿透到父元素 app */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+
+        .app-name {
             color: white;
-            font-size: 28px;
-        }
-        .app-label {
-            color: white; font-size: 11px; margin-top: 6px;
-            display: block; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-            pointer-events: none;
+            font-size: 11px;
+            letter-spacing: 0.5px;
         }
 
-        /* 底座 (Dock) */
-        .dock {
-            position: fixed; 
-            bottom: 20px; 
-            left: 10px; 
-            right: 10px;
-            height: 85px; 
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(20px); 
-            border-radius: 30px;
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr);
-            padding: 8px; 
-            align-items: center; 
-            justify-items: center;
-            z-index: 5;
+        /* 下方 Dock 欄位 */
+        .dock-container {
+            width: 90%;
+            height: 95px;
+            background-color: var(--dock-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 35px;
+            margin-bottom: 30px; /* 與螢幕底部的距離 */
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            padding: 0 10px;
         }
 
-        /* 假的 App 彈出介面 */
-        .fake-app-overlay {
-            position: fixed; inset: 0; background: white;
-            z-index: 100; display: none;
-            opacity: 0; transform: scale(0.9);
-            transition: all 0.3s ease-out;
-            padding-top: 60px; text-align: center;
+        /* 隱藏搜尋按鈕 */
+        .search-pill {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 15px;
         }
-        .fake-app-overlay.active { display: block; opacity: 1; transform: scale(1); }
-        .close-btn {
-            position: absolute; top: 40px; right: 20px;
-            padding: 10px; background: #eee; border-radius: 50%;
-            cursor: pointer;
-        }
+
+        /* 預設幾個不同的色塊 */
+        .bg-red { background-color: #ff3b30; }
+        .bg-blue { background-color: #007aff; }
+        .bg-green { background-color: #34c759; }
+        .bg-gray { background-color: #8e8e93; }
+
     </style>
 </head>
 <body>
 
-    <div id="settingsApp" class="fake-app-overlay">
-        <div class="close-btn" onclick="closeApp()">✕</div>
-        <h2>系統設定</h2>
-        <p style="color: #666;">無線局域網、藍牙、蜂窩網絡...</p>
-    </div>
-
-    <div class="iphone-screen">
-
-        <div class="swiper mySwiper">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    <div class="app-grid">
-                        <div class="app" onclick="triggerCrash()">
-                            <div class="icon" style="background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%); background-image: url('./images/music.png');">🎵</div>
-                            <span class="app-label">音樂</span>
-                        </div>
-                        <div class="app">
-                            <div class="icon" style="background: linear-gradient(135deg, #00E676 0%, #00C853 100%); background-image: url('./images/facetime.png');">📹</div>
-                            <span class="app-label">FaceTime</span>
-                        </div>
-                        <div class="app">
-                            <div class="icon" style="background: linear-gradient(135deg, #FFD54F 0%, #FFA726 100%); background-image: url('./images/photos.png');">🖼️</div>
-                            <span class="app-label">照片</span>
-                        </div>
-                        <div class="app" onclick="openApp()">
-                            <div class="icon" style="background: linear-gradient(135deg, #90A4AE 0%, #607D8B 100%); background-image: url('./images/settings.png');">⚙️</div>
-                            <span class="app-label">設定</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="app-grid">
-                        <div class="app">
-                            <div class="icon" style="background: linear-gradient(135deg, #424242 0%, #212121 100%); background-image: url('./images/camera.png');">📷</div>
-                            <span class="app-label">相機</span>
-                        </div>
-                        <div class="app">
-                            <div class="icon" style="background: linear-gradient(135deg, #FF5252 0%, #D32F2F 100%); background-image: url('./images/calendar.png');">📅</div>
-                            <span class="app-label">日曆</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="home-screen">
+        <div class="app-item">
+            <div class="app-icon bg-gray"></div>
+            <div class="app-name">照片</div>
+        </div>
+        <div class="app-item">
+            <div class="app-icon bg-blue"></div>
+            <div class="app-name">相機</div>
+        </div>
+        <div class="app-item">
+            <div class="app-icon bg-gray"></div>
+            <div class="app-name">設定</div>
+        </div>
+        <div class="app-item">
+            <div class="app-icon bg-blue"></div>
+            <div class="app-name">檔案</div>
         </div>
 
-        <div class="dock">
-            <div class="app">
-                <div class="icon" style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); background-image: url('./images/phone.png');">📞</div>
-                <span class="app-label">電話</span>
-            </div>
-            <div class="app">
-                <div class="icon" style="background: linear-gradient(135deg, #4FC3F7 0%, #0288D1 100%); background-image: url('./images/messages.png');">💬</div>
-                <span class="app-label">訊息</span>
-            </div>
-            <div class="app">
-                <div class="icon" style="background: linear-gradient(135deg, #64B5F6 0%, #1976D2 100%); background-image: url('./images/mail.png');">✉️</div>
-                <span class="app-label">郵件</span>
-            </div>
-            <div class="app">
-                <div class="icon" style="background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%); background-image: url('./images/safari.png');">🧭</div>
-                <span class="app-label">Safari</span>
-            </div>
+        <div class="app-item">
+            <div class="app-icon bg-gray"></div>
+            <div class="app-name">計算機</div>
+        </div>
+        <div class="app-item">
+            <div class="app-icon bg-gray"></div>
+            <div class="app-name">Abracadabra</div>
+        </div>
+        <div class="app-item">
+            <div class="app-icon bg-blue"></div>
+            <div class="app-name">App Store</div>
+        </div>
+        <div class="app-item">
+            <div class="app-icon bg-red"></div>
+            <div class="app-name">健康</div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script>
-        // 初始化桌面滑動 (確保 Swiper 初始化)
-        var swiper = new Swiper(".mySwiper", {
-            direction: 'horizontal',
-            loop: false,
-            pointerEvents: 'auto', // 關鍵：確保滑動和點擊都能運作
-        });
+    <div class="search-pill">搜尋</div>
 
-        // 進入假的 App
-        function openApp() {
-            document.getElementById('settingsApp').classList.add('active');
-        }
-        function closeApp() {
-            document.getElementById('settingsApp').classList.remove('active');
-        }
+    <div class="dock-container">
+        <div class="app-icon bg-green"></div>
+        <div class="app-icon bg-gray"></div>
+        <div class="app-icon bg-gray"></div>
+        <div class="app-icon bg-blue"></div>
+    </div>
 
-        // 當機魔術觸發點
-        function triggerCrash() {
-            alert('系統發生嚴重錯誤：0x8892');
-            // 當機後，整個螢幕變紅色
-            document.querySelector('.iphone-screen').style.background = 'red';
-        }
-
-        // 禁止縮放
-        document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
-    </script>
 </body>
 </html>
