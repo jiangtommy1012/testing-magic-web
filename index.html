@@ -8,6 +8,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Home Screen</title>
 
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
     <style>
         :root {
             /* 背景圖路徑 */
@@ -34,17 +37,44 @@
             
             /* 背景設定 */
             background-color: #1a1a1a;
+            
+            /* 鎖定行為 - 只允許水平滑動 */
+            overscroll-behavior-y: none; 
+            touch-action: pan-x; /* 只允許水平滑動 */
+            
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            position: relative;
+        }
+
+        /* Swiper 容器 */
+        .swiper {
+            width: 100%;
+            height: 100vh;
+        }
+
+        .swiper-slide {
+            background-color: #1a1a1a;
             background-image: var(--bg-image);
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            
-            /* 鎖定行為 */
-            overscroll-behavior: none; 
-            touch-action: none; 
-            
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-            position: relative;
+        }
+
+        /* 分頁指示器樣式 */
+        .swiper-pagination {
+            bottom: 140px !important; /* 在搜尋欄上方 */
+        }
+
+        .swiper-pagination-bullet {
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0.5;
+            width: 6px;
+            height: 6px;
+        }
+
+        .swiper-pagination-bullet-active {
+            background: rgba(255, 255, 255, 0.9);
+            opacity: 1;
         }
 
         /* App 網格佈局 */
@@ -60,6 +90,12 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .app-item:active {
+            transform: scale(0.85); /* 點擊時縮小 */
         }
 
         .app-icon {
@@ -129,40 +165,75 @@
 </head>
 <body scroll="no">
 
-    <div class="grid-container">
-        <div class="app-item">
-            <div class="app-icon icon-photos"></div>
-            <div class="app-label">照片</div>
-        </div>
-        <div class="app-item">
-            <div class="app-icon icon-camera"></div>
-            <div class="app-label">相機</div>
-        </div>
-        <div class="app-item">
-            <div class="app-icon icon-setting"></div>
-            <div class="app-label">設定</div>
-        </div>
-        <div class="app-item">
-            <div class="app-icon icon-files"></div>
-            <div class="app-label">檔案</div>
-        </div>
+    <!-- Swiper 容器 -->
+    <div class="swiper mySwiper">
+        <div class="swiper-wrapper">
+            
+            <!-- 第一頁 -->
+            <div class="swiper-slide">
+                <div class="grid-container">
+                    <div class="app-item" data-app="照片">
+                        <div class="app-icon icon-photos"></div>
+                        <div class="app-label">照片</div>
+                    </div>
+                    <div class="app-item" data-app="相機">
+                        <div class="app-icon icon-camera"></div>
+                        <div class="app-label">相機</div>
+                    </div>
+                    <div class="app-item" data-app="設定">
+                        <div class="app-icon icon-setting"></div>
+                        <div class="app-label">設定</div>
+                    </div>
+                    <div class="app-item" data-app="檔案">
+                        <div class="app-icon icon-files"></div>
+                        <div class="app-label">檔案</div>
+                    </div>
 
-        <div class="app-item">
-            <div class="app-icon icon-calculator"></div>
-            <div class="app-label">計算機</div>
+                    <div class="app-item" data-app="計算機">
+                        <div class="app-icon icon-calculator"></div>
+                        <div class="app-label">計算機</div>
+                    </div>
+                    <div class="app-item" data-app="Abracadabra">
+                        <div class="app-icon icon-abr"></div>
+                        <div class="app-label">Abracadabra</div>
+                    </div>
+                    <div class="app-item" data-app="App Store">
+                        <div class="app-icon icon-appstore"></div>
+                        <div class="app-label">App Store</div>
+                    </div>
+                    <div class="app-item" data-app="健康">
+                        <div class="app-icon icon-health"></div>
+                        <div class="app-label">健康</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第二頁 -->
+            <div class="swiper-slide">
+                <div class="grid-container">
+                    <div class="app-item" data-app="郵件">
+                        <div class="app-icon icon-setting"></div>
+                        <div class="app-label">郵件</div>
+                    </div>
+                    <div class="app-item" data-app="訊息">
+                        <div class="app-icon icon-phone"></div>
+                        <div class="app-label">訊息</div>
+                    </div>
+                    <div class="app-item" data-app="Safari">
+                        <div class="app-icon icon-appstore"></div>
+                        <div class="app-label">Safari</div>
+                    </div>
+                    <div class="app-item" data-app="地圖">
+                        <div class="app-icon icon-files"></div>
+                        <div class="app-label">地圖</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-        <div class="app-item">
-            <div class="app-icon icon-abr"></div>
-            <div class="app-label">Abracadabra</div>
-        </div>
-        <div class="app-item">
-            <div class="app-icon icon-appstore"></div>
-            <div class="app-label">App Store</div>
-        </div>
-        <div class="app-item">
-            <div class="app-icon icon-health"></div>
-            <div class="app-label">健康</div>
-        </div>
+        
+        <!-- 分頁指示器 -->
+        <div class="swiper-pagination"></div>
     </div>
 
     <div class="search-bar">
@@ -176,14 +247,55 @@
         <div class="app-icon icon-files"></div>
     </div>
 
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
     <script>
-        // 阻止整個頁面的觸控滑動行為
+        // 初始化 Swiper
+        const swiper = new Swiper('.mySwiper', {
+            direction: 'horizontal',
+            loop: false,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            resistanceRatio: 0.85, // 滑動阻力，讓滑動更像 iPhone
+            speed: 300, // 滑動速度
+        });
+
+        // 阻止垂直滑動，但保留 Swiper 的水平滑動
+        let touchStartY = 0;
+        document.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
         document.addEventListener('touchmove', function(e) {
-            e.preventDefault();
+            const touchMoveY = e.touches[0].clientY;
+            const deltaY = Math.abs(touchMoveY - touchStartY);
+            const deltaX = Math.abs(e.touches[0].clientX - e.touches[0].clientX);
+            
+            // 只阻止明顯的垂直滑動
+            if (deltaY > 10 && deltaY > deltaX) {
+                e.preventDefault();
+            }
         }, { passive: false });
 
-        // 如果未來有需要點擊 App Icon 觸發魔術，可以在這裡加上監聽
-        console.log("iOS Home Screen 模擬器已啟動，滑動已鎖定。");
+        // App 點擊事件
+        document.querySelectorAll('.app-item').forEach(app => {
+            app.addEventListener('click', function() {
+                const appName = this.getAttribute('data-app');
+                
+                // 觸覺反饋（如果設備支援）
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(10);
+                }
+                
+                // 顯示提示窗
+                alert(`正在開啟「${appName}」`);
+            });
+        });
+
+        console.log("iOS Home Screen 已啟動！可左右滑動切換頁面。");
     </script>
 
 </body>
