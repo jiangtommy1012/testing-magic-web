@@ -64,7 +64,13 @@
 
         /* 分頁指示器樣式 */
         .swiper-pagination {
-            bottom: 140px !important; /* 在搜尋欄上方 */
+            bottom: 125px !important; /* 與搜尋欄同位置 */
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .swiper-pagination.visible {
+            opacity: 1;
         }
 
         .swiper-pagination-bullet {
@@ -131,6 +137,14 @@
             border-radius: 20px;
             display: flex;
             align-items: center;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+            z-index: 10;
+        }
+
+        .search-bar.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
 
         /* --- 下方 Dock --- */
@@ -263,6 +277,33 @@
             },
             resistanceRatio: 0.85, // 滑動阻力，讓滑動更像 iPhone
             speed: 300, // 滑動速度
+            on: {
+                // 滑動開始時
+                slideChangeTransitionStart: function() {
+                    document.querySelector('.search-bar').classList.add('hidden');
+                    document.querySelector('.swiper-pagination').classList.add('visible');
+                },
+                // 滑動結束時
+                slideChangeTransitionEnd: function() {
+                    document.querySelector('.search-bar').classList.remove('hidden');
+                    document.querySelector('.swiper-pagination').classList.remove('visible');
+                },
+                // 觸控開始時（準備滑動）
+                touchStart: function() {
+                    document.querySelector('.search-bar').classList.add('hidden');
+                    document.querySelector('.swiper-pagination').classList.add('visible');
+                },
+                // 觸控結束時（放開手指）
+                touchEnd: function() {
+                    // 延遲一下再隱藏分頁指示器，讓動畫更流暢
+                    setTimeout(() => {
+                        if (!swiper.animating) {
+                            document.querySelector('.search-bar').classList.remove('hidden');
+                            document.querySelector('.swiper-pagination').classList.remove('visible');
+                        }
+                    }, 300);
+                }
+            }
         });
 
         // 阻止垂直滑動，但保留 Swiper 的水平滑動
