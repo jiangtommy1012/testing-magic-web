@@ -325,14 +325,23 @@
                 },
                 // 觸控結束時
                 touchEnd: function() {
+                    // 立即重置滑動狀態，避免影響點擊
+                    setTimeout(() => {
+                        isSwiping = false;
+                    }, 100);
+                    
                     // 延遲一下再隱藏分頁指示器，讓動畫更流暢
                     setTimeout(() => {
                         if (!swiper.animating) {
                             document.querySelector('.search-bar').classList.remove('hidden');
                             document.querySelector('.swiper-pagination').classList.remove('visible');
-                            isSwiping = false;
                         }
                     }, 300);
+                },
+                // 滑動完全結束時
+                transitionEnd: function() {
+                    // 確保滑動狀態被重置
+                    isSwiping = false;
                 }
             }
         });
