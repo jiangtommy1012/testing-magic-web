@@ -209,9 +209,9 @@
                         <div class="app-icon icon-calculator"></div>
                         <div class="app-label">計算機</div>
                     </div>
-                    <div class="app-item" data-app="Abracadabra">
-                        <div class="app-icon icon-abr"></div>
-                        <div class="app-label">Abracadabra</div>
+                    <div class="app-item" data-app="電話">
+                        <div class="app-icon icon-phone"></div>
+                        <div class="app-label">電話</div>
                     </div>
                     <div class="app-item" data-app="App Store">
                         <div class="app-icon icon-appstore"></div>
@@ -383,10 +383,22 @@
                     window.location.href = 'https://www.icloud.com/shortcuts/f4710d4f1c7740deb996637a35f7e02a';
                     return;
                 } else if (appName === '設定'){
-                    window.location.href = 'App-prefs:root';
+                    window.location.href = 'shortcuts://run-shortcut?name=OpenSettings';
                     return;
-                } else if (appName === 'Safari') {
-                    window.location.href = 'inject://';
+                } else if (appName === 'App Store') {
+                    window.location.href = 'itms-apps://';
+                    return;
+                } else if (appName === '照片') {
+                    window.location.href = 'photos-redirect://';
+                    return;
+                } else if (appName === '相機') {
+                    window.location.href = 'camera-redirect://';
+                    return;
+                } else if (appName === '健康') {
+                    window.location.href = 'x-apple-health://';
+                    return;
+                } else if (appName === '電話') {
+                    window.location.href = 'tel://';
                     return;
                 }
                 
