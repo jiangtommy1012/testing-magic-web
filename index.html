@@ -167,7 +167,7 @@
         }
 
         /* --- 各個 Icon 圖片設定 --- */
-        .icon-photos { background-image: url('images/icon-photos.jpg'); background-color: #fff; }
+        .icon-photos { background-image: url('images/icon-photos.png'); background-color: #fff; }
         .icon-camera { background-image: url('images/icon-camera.png'); background-color: #fff; }
         .icon-setting { background-image: url('images/icon-setting.png'); background-color: #8e8e93; }
         .icon-files { background-image: url('images/icon-files.png'); background-color: #007aff; }
@@ -267,6 +267,12 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     
     <script>
+        // 追蹤滑動狀態
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isSwiping = false;
+        const SWIPE_THRESHOLD = 15; // 滑動閾值（像素）
+
         // 初始化 Swiper
         const swiper = new Swiper('.mySwiper', {
             direction: 'horizontal',
@@ -277,6 +283,7 @@
             },
             resistanceRatio: 0.85, // 滑動阻力，讓滑動更像 iPhone
             speed: 300, // 滑動速度
+            threshold: 10, // Swiper 內建的滑動閾值
             on: {
                 // 滑動開始時
                 slideChangeTransitionStart: function() {
@@ -288,18 +295,34 @@
                     document.querySelector('.search-bar').classList.remove('hidden');
                     document.querySelector('.swiper-pagination').classList.remove('visible');
                 },
-                // 觸控開始時（準備滑動）
-                touchStart: function() {
-                    document.querySelector('.search-bar').classList.add('hidden');
-                    document.querySelector('.swiper-pagination').classList.add('visible');
+                // 觸控開始時
+                touchStart: function(swiper, event) {
+                    touchStartX = event.touches[0].clientX;
+                    touchStartY = event.touches[0].clientY;
+                    isSwiping = false;
                 },
-                // 觸控結束時（放開手指）
+                // 觸控移動時
+                touchMove: function(swiper, event) {
+                    const touchMoveX = event.touches[0].clientX;
+                    const touchMoveY = event.touches[0].clientY;
+                    const deltaX = Math.abs(touchMoveX - touchStartX);
+                    const deltaY = Math.abs(touchMoveY - touchStartY);
+                    
+                    // 只有當水平移動超過閾值，才算是滑動
+                    if (deltaX > SWIPE_THRESHOLD && deltaX > deltaY && !isSwiping) {
+                        isSwiping = true;
+                        document.querySelector('.search-bar').classList.add('hidden');
+                        document.querySelector('.swiper-pagination').classList.add('visible');
+                    }
+                },
+                // 觸控結束時
                 touchEnd: function() {
                     // 延遲一下再隱藏分頁指示器，讓動畫更流暢
                     setTimeout(() => {
                         if (!swiper.animating) {
                             document.querySelector('.search-bar').classList.remove('hidden');
                             document.querySelector('.swiper-pagination').classList.remove('visible');
+                            isSwiping = false;
                         }
                     }, 300);
                 }
@@ -307,7 +330,6 @@
         });
 
         // 阻止垂直滑動，但保留 Swiper 的水平滑動
-        let touchStartY = 0;
         document.addEventListener('touchstart', function(e) {
             touchStartY = e.touches[0].clientY;
         }, { passive: true });
@@ -315,7 +337,7 @@
         document.addEventListener('touchmove', function(e) {
             const touchMoveY = e.touches[0].clientY;
             const deltaY = Math.abs(touchMoveY - touchStartY);
-            const deltaX = Math.abs(e.touches[0].clientX - e.touches[0].clientX);
+            const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
             
             // 只阻止明顯的垂直滑動
             if (deltaY > 10 && deltaY > deltaX) {
@@ -325,7 +347,12 @@
 
         // App 點擊事件
         document.querySelectorAll('.app-item').forEach(app => {
-            app.addEventListener('click', function() {
+            app.addEventListener('click', function(e) {
+                // 如果正在滑動，不觸發點擊事件
+                if (isSwiping) {
+                    return;
+                }
+                
                 const appName = this.getAttribute('data-app');
                 
                 // 觸覺反饋（如果設備支援）
