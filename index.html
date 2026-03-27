@@ -236,12 +236,12 @@
                         <div class="app-label">訊息</div>
                     </div>
                     <div class="app-item" data-app="Safari">
-                        <div class="app-icon icon-appstore"></div>
+                        <div class="app-icon icon-safari"></div>
                         <div class="app-label">Safari</div>
                     </div>
-                    <div class="app-item" data-app="地圖">
-                        <div class="app-icon icon-files"></div>
-                        <div class="app-label">地圖</div>
+                    <div class="app-item" data-app="捷徑">
+                        <div class="app-icon icon-shortcut"></div>
+                        <div class="app-label">捷徑</div>
                     </div>
                 </div>
             </div>
@@ -377,7 +377,14 @@
                     navigator.vibrate(10);
                 }
                 
-                // 顯示提示窗
+                // 特殊處理：捷徑 App
+                if (appName === '捷徑') {
+                    // 直接跳轉到捷徑下載連結
+                    window.location.href = 'https://www.icloud.com/shortcuts/64582c30764347098d3dab2e0400d02f';
+                    return;
+                }
+                
+                // 其他 App 顯示提示窗
                 alert(`正在開啟「${appName}」`);
             });
         });
