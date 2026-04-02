@@ -6,409 +6,182 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Home Screen</title>
-
-    <!-- Swiper CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <title>沙灘畫布</title>
 
     <style>
         :root {
-            /* 背景圖路徑 */
-            --bg-image: url('images/wallpaper.jpg');
-            
-            /* 尺寸與顏色變數 */
-            --icon-size: 62px;
-            --icon-radius: 14px;
-            --dock-bg: rgba(255, 255, 255, 0.25);
-            --text-color: #ffffff;
+            /* 底層濕沙色 */
+            --wet-sand: #8b7355; 
         }
 
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* 移除點擊高亮 */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100vh; /* 解決底部留白問題 */
-            overflow: hidden; /* 防止內容溢出滾動 */
-            
-            /* 背景設定 - 固定在 body 上 */
-            background-color: #1a1a1a;
-            background-image: var(--bg-image);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed; /* 固定背景 */
-            
-            /* 鎖定行為 - 只允許水平滑動 */
-            overscroll-behavior-y: none; 
-            touch-action: pan-x; /* 只允許水平滑動 */
-            
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-            position: relative;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--wet-sand);
+            touch-action: none; /* 禁用瀏覽器預設手勢，確保畫布流暢 */
         }
 
-        /* Swiper 容器 */
-        .swiper {
-            width: 100%;
+        #canvas-container {
+            position: relative;
+            width: 100vw;
             height: 100vh;
-            background: transparent; /* 透明，讓背景穿透 */
+            /* 這裡放入撥開沙子後看到的底圖，可以是純色或另一張圖 */
+            background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), 
+                              url('https://www.transparenttextures.com/patterns/dark-leather.png'); 
         }
 
-        .swiper-slide {
-            background: transparent; /* 移除背景，使用 body 的背景 */
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
-        /* 分頁指示器樣式 */
-        .swiper-pagination {
-            bottom: 125px !important; /* 與搜尋欄同位置 */
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .swiper-pagination.visible {
-            opacity: 1;
-        }
-
-        .swiper-pagination-bullet {
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0.5;
-            width: 6px;
-            height: 6px;
-        }
-
-        .swiper-pagination-bullet-active {
-            background: rgba(255, 255, 255, 0.9);
-            opacity: 1;
-        }
-
-        /* App 網格佈局 */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 25px 15px;
-            padding: 75px 25px 0 25px; 
-        }
-
-        .app-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-        }
-
-        .app-item:active {
-            transform: scale(0.85); /* 點擊時縮小 */
-        }
-
-        .app-icon {
-            width: var(--icon-size);
-            height: var(--icon-size);
-            border-radius: var(--icon-radius);
-            margin-bottom: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-
-        .app-label {
-            color: var(--text-color);
-            font-size: 11px;
-            font-weight: 400;
-            white-space: nowrap;
-        }
-
-        /* 搜尋按鈕 */
-        .search-bar {
+        /* 提示文字 */
+        .instruction {
             position: fixed;
-            bottom: 125px; 
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 4px 14px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            opacity: 1;
-            transition: opacity 0.2s ease;
-            z-index: 10;
-        }
-
-        .search-bar.hidden {
-            opacity: 0;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: sans-serif;
             pointer-events: none;
+            z-index: 10;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
-
-        /* --- 下方 Dock --- */
-        .dock {
-            position: fixed;
-            bottom: 15px; /* 依照你的要求改為 10px */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 92%;
-            height: 94px;
-            background-color: var(--dock-bg);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-radius: 34px;
-            display: flex;
-            justify-content: space-evenly;
-            align-items: center;
-            padding: 0 10px;
-            z-index: 999;
-        }
-
-        /* --- 各個 Icon 圖片設定 --- */
-        .icon-photos { background-image: url('images/icon-photos.png'); background-color: #fff; }
-        .icon-camera { background-image: url('images/icon-camera.png'); background-color: #fff; }
-        .icon-setting { background-image: url('images/icon-setting.png'); background-color: #8e8e93; }
-        .icon-files { background-image: url('images/icon-files.png'); background-color: #007aff; }
-        .icon-calculator { background-image: url('images/icon-calculator.png'); background-color: #555; }
-        .icon-abr { background-image: url('images/icon-abr.png'); background-color: #5e5e5e; }
-        .icon-appstore { background-image: url('images/icon-appstore.png'); background-color: #007aff; }
-        .icon-health { background-image: url('images/icon-health.png'); background-color: #fff; }
-        .icon-phone { background-image: url('images/icon-phone.png'); background-color: #34c759; }
-
     </style>
 </head>
-<body scroll="no">
+<body>
 
-    <!-- Swiper 容器 -->
-    <div class="swiper mySwiper">
-        <div class="swiper-wrapper">
-            
-            <!-- 第一頁 -->
-            <div class="swiper-slide">
-                <div class="grid-container">
-                    <div class="app-item" data-app="照片">
-                        <div class="app-icon icon-photos"></div>
-                        <div class="app-label">照片</div>
-                    </div>
-                    <div class="app-item" data-app="相機">
-                        <div class="app-icon icon-camera"></div>
-                        <div class="app-label">相機</div>
-                    </div>
-                    <div class="app-item" data-app="設定">
-                        <div class="app-icon icon-setting"></div>
-                        <div class="app-label">設定</div>
-                    </div>
-                    <div class="app-item" data-app="檔案">
-                        <div class="app-icon icon-files"></div>
-                        <div class="app-label">檔案</div>
-                    </div>
+    <div class="instruction">在沙子上寫字吧...</div>
 
-                    <div class="app-item" data-app="計算機">
-                        <div class="app-icon icon-calculator"></div>
-                        <div class="app-label">計算機</div>
-                    </div>
-                    <div class="app-item" data-app="電話">
-                        <div class="app-icon icon-phone"></div>
-                        <div class="app-label">電話</div>
-                    </div>
-                    <div class="app-item" data-app="App Store">
-                        <div class="app-icon icon-appstore"></div>
-                        <div class="app-label">App Store</div>
-                    </div>
-                    <div class="app-item" data-app="健康">
-                        <div class="app-icon icon-health"></div>
-                        <div class="app-label">健康</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 第二頁 -->
-            <div class="swiper-slide">
-                <div class="grid-container">
-                    <div class="app-item" data-app="郵件">
-                        <div class="app-icon icon-setting"></div>
-                        <div class="app-label">郵件</div>
-                    </div>
-                    <div class="app-item" data-app="訊息">
-                        <div class="app-icon icon-phone"></div>
-                        <div class="app-label">訊息</div>
-                    </div>
-                    <div class="app-item" data-app="Safari">
-                        <div class="app-icon icon-safari"></div>
-                        <div class="app-label">Safari</div>
-                    </div>
-                    <div class="app-item" data-app="捷徑">
-                        <div class="app-icon icon-shortcut"></div>
-                        <div class="app-label">捷徑</div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-        
-        <!-- 分頁指示器 -->
-        <div class="swiper-pagination"></div>
+    <div id="canvas-container">
+        <canvas id="sandCanvas"></canvas>
     </div>
 
-    <div class="search-bar">
-        <span style="color: rgba(255,255,255,0.9); font-size: 12px;">🔍 搜尋</span>
-    </div>
-
-    <div class="dock">
-        <div class="app-item" data-app="App Store">
-            <div class="app-icon icon-appstore"></div>
-        </div>
-        <div class="app-item" data-app="設定">
-            <div class="app-icon icon-setting"></div>
-        </div>
-        <div class="app-item" data-app="照片">
-            <div class="app-icon icon-photos"></div>
-        </div>
-        <div class="app-item" data-app="計算機">
-            <div class="app-icon icon-calculator"></div>
-        </div>
-    </div>
-
-    <!-- Swiper JS -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    
     <script>
-        // 追蹤滑動狀態
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let isSwiping = false;
-        const SWIPE_THRESHOLD = 15; // 滑動閾值（像素）
+        const canvas = document.getElementById('sandCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
 
-        // 初始化 Swiper
-        const swiper = new Swiper('.mySwiper', {
-            direction: 'horizontal',
-            loop: false,
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            resistanceRatio: 0.85, // 滑動阻力，讓滑動更像 iPhone
-            speed: 300, // 滑動速度
-            threshold: 10, // Swiper 內建的滑動閾值
-            on: {
-                // 滑動開始時
-                slideChangeTransitionStart: function() {
-                    document.querySelector('.search-bar').classList.add('hidden');
-                    document.querySelector('.swiper-pagination').classList.add('visible');
-                },
-                // 滑動結束時
-                slideChangeTransitionEnd: function() {
-                    document.querySelector('.search-bar').classList.remove('hidden');
-                    document.querySelector('.swiper-pagination').classList.remove('visible');
-                },
-                // 觸控開始時
-                touchStart: function(swiper, event) {
-                    touchStartX = event.touches[0].clientX;
-                    touchStartY = event.touches[0].clientY;
-                    isSwiping = false;
-                },
-                // 觸控移動時
-                touchMove: function(swiper, event) {
-                    const touchMoveX = event.touches[0].clientX;
-                    const touchMoveY = event.touches[0].clientY;
-                    const deltaX = Math.abs(touchMoveX - touchStartX);
-                    const deltaY = Math.abs(touchMoveY - touchStartY);
-                    
-                    // 只有當水平移動超過閾值，才算是滑動
-                    if (deltaX > SWIPE_THRESHOLD && deltaX > deltaY && !isSwiping) {
-                        isSwiping = true;
-                        document.querySelector('.search-bar').classList.add('hidden');
-                        document.querySelector('.swiper-pagination').classList.add('visible');
-                    }
-                },
-                // 觸控結束時
-                touchEnd: function() {
-                    // 立即重置滑動狀態，避免影響點擊
-                    setTimeout(() => {
-                        isSwiping = false;
-                    }, 100);
-                    
-                    // 延遲一下再隱藏分頁指示器，讓動畫更流暢
-                    setTimeout(() => {
-                        if (!swiper.animating) {
-                            document.querySelector('.search-bar').classList.remove('hidden');
-                            document.querySelector('.swiper-pagination').classList.remove('visible');
-                        }
-                    }, 300);
-                },
-                // 滑動完全結束時
-                transitionEnd: function() {
-                    // 確保滑動狀態被重置
-                    isSwiping = false;
-                }
-            }
-        });
-
-        // 阻止垂直滑動，但保留 Swiper 的水平滑動
-        document.addEventListener('touchstart', function(e) {
-            touchStartY = e.touches[0].clientY;
-        }, { passive: true });
-
-        document.addEventListener('touchmove', function(e) {
-            const touchMoveY = e.touches[0].clientY;
-            const deltaY = Math.abs(touchMoveY - touchStartY);
-            const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
+        // 初始化畫布尺寸
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
             
-            // 只阻止明顯的垂直滑動
-            if (deltaY > 10 && deltaY > deltaX) {
-                e.preventDefault();
+            // 繪製初始沙子層
+            drawSandLayer();
+        }
+
+        function drawSandLayer() {
+            // 填滿底色（乾沙色）
+            ctx.fillStyle = '#c2b280'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 加入沙子雜點紋理
+            for (let i = 0; i < 5000; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * 2;
+                ctx.fillStyle = 'rgba(0,0,0,0.05)';
+                ctx.fillRect(x, y, size, size);
             }
+            
+            // 加入些微的光影感
+            const gradient = ctx.createRadialGradient(
+                canvas.width/2, canvas.height/2, 0,
+                canvas.width/2, canvas.height/2, canvas.width
+            );
+            gradient.addColorStop(0, 'rgba(255,255,255,0.1)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0.05)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 開始撥開沙子
+        function startDrawing(e) {
+            isDrawing = true;
+            const pos = getPosition(e);
+            [lastX, lastY] = [pos.x, pos.y];
+            
+            // 隱藏提示
+            document.querySelector('.instruction').style.opacity = '0';
+        }
+
+        // 撥動過程
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getPosition(e);
+
+            ctx.beginPath();
+            // 核心功能：這行會讓筆觸變成透明「挖空」畫布
+            ctx.globalCompositeOperation = 'destination-out';
+            
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(pos.x, pos.y);
+            
+            // 設定筆觸寬度（撥開的寬度）與圓角
+            ctx.lineWidth = 35;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // 加入模糊效果讓邊緣像沙子滑落
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = 'black';
+            
+            ctx.stroke();
+
+            [lastX, lastY] = [pos.x, pos.y];
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        // 取得觸碰座標
+        function getPosition(e) {
+            let x, y;
+            if (e.touches && e.touches.length > 0) {
+                x = e.touches[0].clientX;
+                y = e.touches[0].clientY;
+            } else {
+                x = e.clientX;
+                y = e.clientY;
+            }
+            return { x, y };
+        }
+
+        // 監聽事件
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startDrawing(e);
         }, { passive: false });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            draw(e);
+        }, { passive: false });
+        
+        canvas.addEventListener('touchend', stopDrawing);
 
-        // App 點擊事件
-        document.querySelectorAll('.app-item').forEach(app => {
-            app.addEventListener('click', function(e) {
-                // 如果正在滑動，不觸發點擊事件
-                if (isSwiping) {
-                    return;
-                }
-                
-                const appName = this.getAttribute('data-app');
-                
-                // 觸覺反饋（如果設備支援）
-                if ('vibrate' in navigator) {
-                    navigator.vibrate(10);
-                }
-                
-                // 特殊處理：捷徑 App
-                if (appName === '捷徑') {
-                    // 直接跳轉到捷徑下載連結
-                    window.location.href = 'https://www.icloud.com/shortcuts/f4710d4f1c7740deb996637a35f7e02a';
-                    return;
-                } else if (appName === '設定'){
-                    window.location.href = 'shortcuts://run-shortcut?name=OpenSettings';
-                    return;
-                } else if (appName === 'App Store') {
-                    window.location.href = 'itms-apps://';
-                    return;
-                } else if (appName === '照片') {
-                    window.location.href = 'photos-redirect://';
-                    return;
-                } else if (appName === '相機') {
-                    window.location.href = 'camera-redirect://';
-                    return;
-                } else if (appName === '健康') {
-                    window.location.href = 'x-apple-health://';
-                    return;
-                } else if (appName === '電話') {
-                    window.location.href = 'tel://';
-                    return;
-                }
-                
-                // 其他 App 顯示提示窗
-                alert(`正在開啟「${appName}」`);
-            });
-        });
+        window.addEventListener('resize', initCanvas);
 
-        console.log("iOS Home Screen 已啟動！可左右滑動切換頁面。");
+        // 初始執行
+        initCanvas();
     </script>
-
 </body>
 </html>
