@@ -3,29 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>立體白沙模擬 - 滿版優化</title>
+    <title>立體白沙模擬 - 滿版修正</title>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+        }
         
-        /* 確保 body 和 html 佔滿螢幕且不產生捲軸 */
+        /* 徹底移除所有外距與內距，並鎖定高度 */
         body, html { 
             margin: 0; 
             padding: 0; 
             width: 100%; 
             height: 100%; 
             overflow: hidden; 
-            background-color: #f0ede5; 
+            background-color: #f0ede5; /* 與沙子相近的顏色防止閃爍 */
             touch-action: none; 
         }
 
-        /* 讓畫布固定在最底層並佔滿 100% 視窗 */
+        /* 使用 fixed 鎖定位置，確保不論網址列如何變化，畫布永遠釘在最頂端 */
         #sandCanvas { 
             display: block; 
-            width: 100vw; 
-            height: 100vh; 
             position: fixed;
             top: 0;
             left: 0;
+            width: 100vw; 
+            height: 100vh; 
+            z-index: 1;
         }
     </style>
 </head>
@@ -67,6 +71,7 @@
             float diff = max(dot(normal, lightDir), 0.0);
 
             vec3 sandColor = vec3(0.98, 0.97, 0.94);
+            vec3 midColor = vec3(0.92, 0.88, 0.82);
             vec3 deepColor = vec3(0.78, 0.74, 0.68);
 
             vec3 color = mix(deepColor, sandColor, diff);
@@ -87,40 +92,44 @@
         let heightData = new Uint8Array(size * size);
         let heightMapTexture, program;
 
-        function init() {
-            // --- 滿版關鍵：更新 Canvas 的內部繪製解析度 ---
+        function resize() {
+            // 使用 innerWidth/Height 獲取最精確的可視區域
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            gl.viewport(0, 0, canvas.width, canvas.height);
-
-            // 如果是第一次初始化才產生沙子
-            if (!program) {
-                for(let i=0; i<heightData.length; i++) {
-                    heightData[i] = 100 + Math.random() * 10; 
+            if (gl) {
+                gl.viewport(0, 0, canvas.width, canvas.height);
+                if (program) {
+                    gl.useProgram(program);
+                    gl.uniform2f(gl.getUniformLocation(program, 'resolution'), canvas.width, canvas.height);
                 }
-                program = createProgram(document.getElementById('vs').text, document.getElementById('fs').text);
+            }
+        }
+
+        function init() {
+            resize();
+            
+            // 初始化高度
+            for(let i=0; i<heightData.length; i++) {
+                heightData[i] = 100 + Math.random() * 10; 
             }
             
+            program = createProgram(document.getElementById('vs').text, document.getElementById('fs').text);
             gl.useProgram(program);
             setupGeometry();
             updateTexture();
+            
+            // 監聽視窗變化
+            window.addEventListener('resize', resize);
+            
+            render();
         }
 
-        // 監聽視窗大小改變
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            gl.viewport(0, 0, canvas.width, canvas.height);
-            // 重新傳遞解析度資訊給 Shader
-            gl.uniform2f(gl.getUniformLocation(program, 'resolution'), canvas.width, canvas.height);
-        });
-
+        // --- 物理邏輯維持不變 ---
         function deformSand(x, y) {
             const u = x / canvas.width;
             const v = 1.0 - (y / canvas.height);
             const cx = Math.floor(u * size), cy = Math.floor(v * size);
             const r = 22; 
-            
             let displaced = 0;
 
             for(let iy=-r; iy<=r; iy++) {
@@ -157,6 +166,7 @@
             updateTexture();
         }
 
+        // ... 其餘輔助函式 (updateTexture, setupGeometry, createBuf, createProgram, render) 與之前一致 ...
         function updateTexture() {
             if(heightMapTexture) gl.deleteTexture(heightMapTexture);
             heightMapTexture = gl.createTexture();
@@ -215,7 +225,6 @@
             requestAnimationFrame(render);
         }
         init();
-        render(); // 啟動循環
     </script>
 </body>
 </html>
