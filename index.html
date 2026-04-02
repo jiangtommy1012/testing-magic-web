@@ -3,27 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>真實感白沙灘模擬 (極淺色高對比)</title>
-
+    <title>白沙灘模擬</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        /* 使用與白沙基色相近的 HTML 背景色，防止閃爍 */
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #fdfaf5; touch-action: none; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f0ede5; touch-action: none; }
         #sandCanvas { display: block; width: 100vw; height: 100vh; }
     </style>
 </head>
 <body>
-
     <canvas id="sandCanvas"></canvas>
 
     <script id="vs" type="x-shader/x-vertex">
         attribute vec2 position;
         attribute vec2 uv;
         varying vec2 vUv;
-
         void main() {
             vUv = uv;
             gl_Position = vec4(position, 0.0, 1.0);
@@ -33,186 +28,169 @@
     <script id="fs" type="x-shader/x-fragment">
         precision highp float;
         varying vec2 vUv;
-        uniform sampler2D heightMap; // 高度圖
+        uniform sampler2D heightMap;
         uniform vec2 resolution;
-        uniform vec3 lightDirection; // 陽光方向 (x, y, z)
+        uniform vec3 lightDirection;
 
-        // 模擬真實沙粒顆粒感的隨機函式
         float random(vec2 st) {
             return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
         }
 
         void main() {
             vec2 st = vUv;
-            
-            // --- 1. 取得該點的高度 (0.0 - 1.0) ---
             float h = texture2D(heightMap, st).r;
 
-            // --- 2. 核心光影計算 (高對比法線貼圖模擬) ---
-            // 採樣鄰近點的高度，計算表面斜率（法線）
-            float texelSize = 1.0 / 512.0; // 假設高度圖解析度
-            float hL = texture2D(heightMap, st - vec2(texelSize, 0.0)).r;
-            float hR = texture2D(heightMap, st + vec2(texelSize, 0.0)).r;
-            float hD = texture2D(heightMap, st - vec2(0.0, texelSize)).r;
-            float hU = texture2D(heightMap, st + vec2(0.0, texelSize)).r;
+            // 計算斜率 (法線)
+            float step = 1.0 / 512.0;
+            float hL = texture2D(heightMap, st - vec2(step, 0.0)).r;
+            float hR = texture2D(heightMap, st + vec2(step, 0.0)).r;
+            float hD = texture2D(heightMap, st - vec2(0.0, step)).r;
+            float hU = texture2D(heightMap, st + vec2(0.0, step)).r;
 
-            // 計算表面切線向量 (非線性放大高度差異，增加立體感)
-            vec3 va = normalize(vec3(2.0 * texelSize, 0.0, hR - hL));
-            vec3 vb = normalize(vec3(0.0, 2.0 * texelSize, hU - hD));
-            // 法線 = 切線的叉積
-            vec3 normal = cross(va, vb);
-
-            // 計算光照強度 (Lambertian Diffuse)
+            // 強化邊緣立體感
+            vec3 normal = normalize(vec3((hL - hR) * 2.0, (hD - hU) * 2.0, 1.0));
             vec3 light = normalize(lightDirection);
             float diff = max(dot(normal, light), 0.0);
-            
-            // --- 3. 軌跡明顯度極大化：非線性放大亮部和陰影 ---
-            // 讓堆積突起處更亮，凹陷陰影更深
-            diff = pow(diff, 1.9) * 1.8; // 放大亮部
-            
-            // --- 4. 模擬極淺色沙子與無窮盡底部 (核心需求) ---
-            // 優化為極淺的米白色乾沙基色（白沙灘質感）
-            vec3 drySandColor = vec3(0.99, 0.98, 0.96); 
-            // 撥開後的淺灰褐色沙色 (不再是深色，模擬無窮盡沙子內部反射)
-            vec3 wetSandColor = vec3(0.85, 0.80, 0.75); 
-            
-            // 根據光影和高度混合乾濕沙色，並根據高度動態調整濕沙色的深度
-            vec3 baseColor = mix(wetSandColor * h * 1.0, drySandColor, diff * 1.5);
 
-            // --- 5. 生成極細高對比顆粒質感 ---
-            // 使用隨機雜訊模擬細沙顆粒
-            float noise = random(st * resolution * 3.0); // 縮放雜點
-            float grain = mix(0.98, 1.02, noise); // 顆粒亮度變化
+            // 顏色設定：淺米色沙子
+            vec3 sandColor = vec3(0.98, 0.96, 0.92); // 乾沙亮面
+            vec3 deepColor = vec3(0.82, 0.78, 0.72); // 撥開後的深處沙色
+
+            // 混合光影
+            vec3 baseColor = mix(deepColor, sandColor, diff);
             
-            // 亮處顆粒更明顯
-            grain = mix(1.0, grain, diff + 0.1);
+            // 增加沙粒細節雜訊
+            float noise = random(st * resolution * 2.0);
+            baseColor *= (0.97 + noise * 0.06);
 
-            // --- 6. 最終輸出 ---
-            // 混合光影、顏色、顆粒和高度感
-            vec3 ambient = vec3(0.4, 0.38, 0.35); // 陰影處的顏色
-            vec3 finalColor = baseColor * grain * (ambient + diff * 0.9);
-
-            gl_FragColor = vec4(finalColor, 1.0);
+            // 最終亮度修正，避免全白
+            gl_FragColor = vec4(baseColor * (0.6 + diff * 0.4), 1.0);
         }
     </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
-
     <script>
         const canvas = document.getElementById('sandCanvas');
-        const gl = canvas.getContext('webgl', { antialias: true, alpha: false });
+        const gl = canvas.getContext('webgl');
+        let heightData = new Uint8Array(512 * 512);
+        let heightMapTexture, program;
 
-        if (!gl) { alert("此裝置不支援 WebGL"); }
-
-        let heightMapTexture;
-        let heightData = new Uint8Array(512 * 512); // 更高解析度的高度圖
-        let program;
-
-        // 初始化
         function init() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+            gl.viewport(0, 0, canvas.width, canvas.height);
 
-            // 初始化高度數據 (設定一個基礎隨機粗糙度)
-            for(let i=0; i<heightData.length; i++){
-                // 基礎高度約 0.7 - 1.0，加入微小雜訊
-                heightData[i] = 180 + Math.random() * 75; 
+            // 初始化：從中等高度開始，這樣「往上堆」和「往下挖」都有空間
+            for(let i=0; i<heightData.length; i++) {
+                heightData[i] = 128 + Math.random() * 20; 
             }
-            updateHeightMapTexture();
-
-            // 建立 WebGL Program
-            program = createProgram(
-                document.getElementById('vs').text,
-                document.getElementById('fs').text
-            );
+            
+            program = createProgram(document.getElementById('vs').text, document.getElementById('fs').text);
             gl.useProgram(program);
-
             setupGeometry();
-            setupUniforms();
+            updateTexture();
+            render();
+        }
 
+        function deformSand(x, y, isMoving) {
+            const u = x / canvas.width;
+            const v = 1.0 - (y / canvas.height);
+            const cx = Math.floor(u * 512), cy = Math.floor(v * 512);
+            const r = 25; // 筆刷半徑
+            
+            let displaced = 0;
+            // 1. 挖深
+            for(let iy=-r; iy<=r; iy++) {
+                for(let ix=-r; ix<=r; ix++) {
+                    const gx = cx+ix, gy = cy+iy;
+                    if(gx>=0 && gx<512 && gy>=0 && gy<512) {
+                        const d = Math.sqrt(ix*ix + iy*iy);
+                        if(d < r) {
+                            const idx = gy*512 + gx;
+                            const strength = (1.0 - d/r) * 15.0;
+                            const old = heightData[idx];
+                            // 永遠留有一點點高度 (10)，不會見底
+                            heightData[idx] = Math.max(10, heightData[idx] - strength);
+                            displaced += (old - heightData[idx]);
+                        }
+                    }
+                }
+            }
+            // 2. 堆高到邊緣
+            const pr = r * 1.3;
+            const pAmt = displaced / (pr * pr);
+            for(let iy=-pr; iy<=pr; iy++) {
+                for(let ix=-pr; ix<=pr; ix++) {
+                    const gx = cx+ix, gy = cy+iy;
+                    if(gx>=0 && gx<512 && gy>=0 && gy<512) {
+                        const d = Math.sqrt(ix*ix + iy*iy);
+                        if(d > r * 0.8 && d < pr) {
+                            const idx = gy*512 + gx;
+                            heightData[idx] = Math.min(255, heightData[idx] + pAmt * 0.5);
+                        }
+                    }
+                }
+            }
+            updateTexture();
+        }
+
+        function updateTexture() {
+            if(heightMapTexture) gl.deleteTexture(heightMapTexture);
+            heightMapTexture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, heightMapTexture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 512, 512, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, heightData);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        }
+
+        function setupGeometry() {
+            const pos = new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]);
+            const uv = new Float32Array([0,0, 1,0, 0,1, 0,1, 1,0, 1,1]);
+            createBuf(pos, 'position', 2);
+            createBuf(uv, 'uv', 2);
+            gl.uniform2f(gl.getUniformLocation(program, 'resolution'), canvas.width, canvas.height);
+            gl.uniform3f(gl.getUniformLocation(program, 'lightDirection'), 0.5, 0.5, 0.8);
+        }
+
+        function createBuf(data, name, size) {
+            const buf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+            gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+            const loc = gl.getAttribLocation(program, name);
+            gl.enableVertexAttribArray(loc);
+            gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
+        }
+
+        function createProgram(v, f) {
+            const vs = gl.createShader(gl.VERTEX_SHADER);
+            gl.shaderSource(vs, v); gl.compileShader(vs);
+            const fs = gl.createShader(gl.FRAGMENT_SHADER);
+            gl.shaderSource(fs, f); gl.compileShader(fs);
+            const p = gl.createProgram();
+            gl.attachShader(p, vs); gl.attachShader(p, fs); gl.linkProgram(p);
+            return p;
+        }
+
+        let drawing = false;
+        canvas.addEventListener('touchstart', e => { drawing = true; deformSand(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+        canvas.addEventListener('touchmove', e => { if(drawing) { e.preventDefault(); deformSand(e.touches[0].clientX, e.touches[0].clientY); } }, {passive: false});
+        canvas.addEventListener('touchend', () => drawing = false);
+        canvas.addEventListener('mousedown', e => { drawing = true; deformSand(e.clientX, e.clientY); });
+        canvas.addEventListener('mousemove', e => { if(drawing) deformSand(e.clientX, e.clientY); });
+        window.addEventListener('mouseup', () => drawing = false);
+
+        function render() {
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, heightMapTexture);
+            gl.uniform1i(gl.getUniformLocation(program, 'heightMap'), 0);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
             requestAnimationFrame(render);
         }
 
-        // --- 核心物理模擬：物理級無窮盡堆疊撥弄 (無底色) ---
-        function deformSand(x, y, radius, depth) {
-            // 將螢幕座標轉換為高度圖座標
-            const u = x / canvas.width;
-            const v = 1.0 - (y / canvas.height);
-
-            const cx = Math.floor(u * 512);
-            const cy = Math.floor(v * 512);
-            const rGrid = Math.floor(radius * 512 / canvas.width); // 網格半徑
-            
-            let displacedAmount = 0; // 紀錄被撥開的沙子量
-
-            // --- 步驟 1：粒子級撥開沙子 (降低觸碰點高度，無底色限制) ---
-            for (let iy = -rGrid; iy <= rGrid; iy++) {
-                for (let ix = -rGrid; ix <= rGrid; ix++) {
-                    const gx = cx + ix;
-                    const gy = cy + iy;
-
-                    if (gx >= 0 && gx < 512 && gy >= 0 && gy < 512) {
-                        const dist = Math.sqrt(ix * ix + iy * iy);
-                        if (dist < rGrid) {
-                            // 計算撥動影響力
-                            const falloff = 1.0 - (dist / rGrid);
-                            const amount = depth * Math.pow(falloff, 1.4) * 255.0; // 調整非線性影響
-                            
-                            const index = gy * 512 + gx;
-                            const oldHeight = heightData[index];
-                            
-                            // 降低高度，核心限制：設定最小值 (18/255)，而非歸零
-                            // 這確保即使反覆挖弄，該點仍有高度，Shader 會根據該高度計算出淺褐色沙色，看起來永遠是沙子
-                            const newHeight = Math.max(heightData[index] - amount, 18);
-                            heightData[index] = newHeight;
-                            displacedAmount += (oldHeight - heightData[index]);
-                        }
-                    }
-                }
-            }
-
-            // --- 步驟 2：物理堆積沙子 (粒子級，推送到半徑邊緣) ---
-            // 調整堆積半徑和堆積量，讓軌跡突起更立體
-            const pushRadius = rGrid * 1.35; 
-            const pushAmount = displacedAmount / (Math.PI * (pushRadius * pushRadius - rGrid * rGrid) * 0.35); 
-
-            for (let iy = -pushRadius; iy <= pushRadius; iy++) {
-                for (let ix = -pushRadius; ix <= pushRadius; ix++) {
-                    const gx = cx + ix;
-                    const gy = cy + iy;
-
-                    if (gx >= 0 && gx < 512 && gy >= 0 && gy < 512) {
-                        const dist = Math.sqrt(ix * ix + iy * iy);
-                        // 堆積在邊緣環形區域
-                        if (dist > rGrid * 0.9 && dist < pushRadius) {
-                            const index = gy * 512 + gx;
-                            // 增加高度，最高不超過 255
-                            heightData[index] = Math.min(heightData[index] + pushAmount * Math.random(), 255);
-                        }
-                    }
-                }
-            }
-
-            updateHeightMapTexture();
-        }
-
-        // --- WebGL 輔助函式與互動事件 (略，同上個版本，但 deformSand 呼叫深度設定更鬆散) ---
-        function updateHeightMapTexture() { if (heightMapTexture) gl.deleteTexture(heightMapTexture); heightMapTexture = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, heightMapTexture); gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 512, 512, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, heightData); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); }
-        function setupGeometry() { positions = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]; uvs = [0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]; createBuffer(gl.ARRAY_BUFFER, positions, 'position', 2); createBuffer(gl.ARRAY_BUFFER, uvs, 'uv', 2); program.vertexCount = 6; }
-        function setupUniforms() { gl.uniform2f(gl.getUniformLocation(program, 'resolution'), canvas.width, canvas.height); const lightDirLocation = gl.getUniformLocation(program, 'lightDirection'); gl.uniform3fv(lightDirLocation, new Float32Array([1.0, 1.0, 0.7])); } // 模擬斜側光
-        
-        // 互動事件處理
-        let isDrawing = false;
-        canvas.addEventListener('mousedown', (e) => { isDrawing = true; deformSand(e.clientX, e.clientY, 35, 0.1); }); // 設定較大半徑與深度
-        canvas.addEventListener('mouseup', () => isDrawing = false);
-        canvas.addEventListener('mousemove', (e) => { if (isDrawing) { deformSand(e.clientX, e.clientY, 35, 0.1); } });
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; const touch = e.touches[0]; deformSand(touch.clientX, touch.clientY, 35, 0.1); }, { passive: false });
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (isDrawing) { const touch = e.touches[0]; deformSand(touch.clientX, touch.clientY, 35, 0.1); } }, { passive: false });
-        canvas.addEventListener('touchend', () => isDrawing = false);
-
-        // 渲染迴圈與 WebGL 輔助 (略)
-        function render() { gl.clearColor(0.0, 0.0, 0.0, 0.0); gl.clear(gl.COLOR_BUFFER_BIT); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, heightMapTexture); gl.uniform1i(gl.getUniformLocation(program, 'heightMap'), 0); gl.drawArrays(gl.TRIANGLES, 0, program.vertexCount); requestAnimationFrame(render); }
-        function createShader(gl, type, source) { const shader = gl.createShader(type); gl.shaderSource(shader, source); gl.compileShader(shader); if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) { console.error('Shader compilation error: ' + gl.getShaderInfoLog(shader)); gl.deleteShader(shader); return null; } return shader; }
-        function createProgram(vsSource, fsSource) { const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource); const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource); const program = gl.createProgram(); gl.attachShader(program, vertexShader); gl.attachShader(program, fragmentShader); gl.linkProgram(program); if (!gl.getProgramParameter(program, gl.LINK_STATUS)) { console.error('Program link error: ' + gl.getProgramInfoLog(program)); return null; } return program; }
-        function createBuffer(target, data, attributeName, size) { const buffer = gl.createBuffer(); gl.bindBuffer(target, buffer); gl.bufferData(target, new Float32Array(data), gl.STATIC_DRAW); if (attributeName) { const location = gl.getAttribLocation(program, attributeName); gl.enableVertex
+        init();
+    </script>
+</body>
+</html>
