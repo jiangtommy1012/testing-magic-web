@@ -3,33 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>立體白沙模擬 - 滿版修正</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <title>立體白沙模擬</title>
     <style>
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
         }
         
-        /* 徹底移除所有外距與內距，並鎖定高度 */
         body, html { 
             margin: 0; 
             padding: 0; 
             width: 100%; 
             height: 100%; 
             overflow: hidden; 
-            background-color: #f0ede5; /* 與沙子相近的顏色防止閃爍 */
+            /* 關鍵 3：將 body 背景設為與沙子平面一致的顏色，防止系統 UI 留白 */
+            background-color: #e0dcd0; 
             touch-action: none; 
         }
 
-        /* 使用 fixed 鎖定位置，確保不論網址列如何變化，畫布永遠釘在最頂端 */
         #sandCanvas { 
             display: block; 
+            /* 關鍵 4：使用 fixed 定位並強制 top 為 0 */
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw; 
             height: 100vh; 
-            z-index: 1;
+            z-index: 999;
         }
     </style>
 </head>
@@ -59,7 +63,6 @@
         void main() {
             vec2 st = vUv;
             float h = texture2D(heightMap, st).r;
-
             float step = 1.5 / 512.0; 
             float hL = texture2D(heightMap, st - vec2(step, 0.0)).r;
             float hR = texture2D(heightMap, st + vec2(step, 0.0)).r;
@@ -71,7 +74,6 @@
             float diff = max(dot(normal, lightDir), 0.0);
 
             vec3 sandColor = vec3(0.98, 0.97, 0.94);
-            vec3 midColor = vec3(0.92, 0.88, 0.82);
             vec3 deepColor = vec3(0.78, 0.74, 0.68);
 
             vec3 color = mix(deepColor, sandColor, diff);
@@ -92,23 +94,24 @@
         let heightData = new Uint8Array(size * size);
         let heightMapTexture, program;
 
-        function resize() {
-            // 使用 innerWidth/Height 獲取最精確的可視區域
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            if (gl) {
-                gl.viewport(0, 0, canvas.width, canvas.height);
-                if (program) {
-                    gl.useProgram(program);
-                    gl.uniform2f(gl.getUniformLocation(program, 'resolution'), canvas.width, canvas.height);
-                }
+        // 使用更精確的尺寸更新
+        function resizeCanvas() {
+            // 使用視窗實際像素解析度，並考慮 Device Pixel Ratio 以提升精細度
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            
+            if (program) {
+                gl.useProgram(program);
+                gl.uniform2f(gl.getUniformLocation(program, 'resolution'), canvas.width, canvas.height);
             }
         }
 
         function init() {
-            resize();
-            
-            // 初始化高度
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
             for(let i=0; i<heightData.length; i++) {
                 heightData[i] = 100 + Math.random() * 10; 
             }
@@ -117,17 +120,14 @@
             gl.useProgram(program);
             setupGeometry();
             updateTexture();
-            
-            // 監聽視窗變化
-            window.addEventListener('resize', resize);
-            
             render();
         }
 
-        // --- 物理邏輯維持不變 ---
+        // --- 物理與渲染邏輯維持之前的滿意版本 ---
         function deformSand(x, y) {
-            const u = x / canvas.width;
-            const v = 1.0 - (y / canvas.height);
+            // 考慮 DPR 的座標轉換
+            const u = x / window.innerWidth;
+            const v = 1.0 - (y / window.innerHeight);
             const cx = Math.floor(u * size), cy = Math.floor(v * size);
             const r = 22; 
             let displaced = 0;
@@ -166,7 +166,6 @@
             updateTexture();
         }
 
-        // ... 其餘輔助函式 (updateTexture, setupGeometry, createBuf, createProgram, render) 與之前一致 ...
         function updateTexture() {
             if(heightMapTexture) gl.deleteTexture(heightMapTexture);
             heightMapTexture = gl.createTexture();
