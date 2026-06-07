@@ -1,229 +1,331 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <title>立體白沙模擬</title>
-    <style>
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-        
-        body, html { 
-            margin: 0; 
-            padding: 0; 
-            width: 100%; 
-            height: 100vh; 
-            overflow: hidden; 
-            /* 關鍵 3：將 body 背景設為與沙子平面一致的顏色，防止系統 UI 留白 */
-            background-color: #e0dcd0; 
-            touch-action: none; 
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>捷徑觸發器</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap');
 
-        #sandCanvas { 
-            display: block; 
-            /* 關鍵 4：使用 fixed 定位並強制 top 為 0 */
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw; 
-            height: 100vh; 
-            z-index: 999;
-        }
-    </style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #222222;
+      --accent: #e8ff47;
+      --accent2: #ff4757;
+      --accent3: #47d4ff;
+      --text: #f0f0f0;
+      --muted: #555;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      overflow-x: hidden;
+    }
+
+    /* background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(232,255,71,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232,255,71,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+      text-align: left;
+    }
+
+    .label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--text);
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .subtitle {
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* status */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      padding: 0.6rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* buttons */
+    .btn-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      position: relative;
+      width: 100%;
+      padding: 1.1rem 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--accent);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: transform 0.2s ease;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      background: #161616;
+      transform: translateX(2px);
+    }
+
+    .btn:hover::before {
+      transform: scaleY(1);
+    }
+
+    .btn:active {
+      transform: translateX(2px) scale(0.99);
+    }
+
+    .btn.red::before { background: var(--accent2); }
+    .btn.red:hover { border-color: var(--accent2); }
+
+    .btn.blue::before { background: var(--accent3); }
+    .btn.blue:hover { border-color: var(--accent3); }
+
+    .btn-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .btn-name {
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .btn-desc {
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    .btn-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+
+    /* toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--accent);
+      color: #000;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.red {
+      background: var(--accent2);
+      color: #fff;
+    }
+
+    .toast.blue {
+      background: var(--accent3);
+      color: #000;
+    }
+
+    footer {
+      margin-top: 2.5rem;
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.8;
+    }
+
+    footer code {
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+    }
+  </style>
 </head>
 <body>
-    <canvas id="sandCanvas"></canvas>
 
-    <script id="vs" type="x-shader/x-vertex">
-        attribute vec2 position;
-        attribute vec2 uv;
-        varying vec2 vUv;
-        void main() {
-            vUv = uv;
-            gl_Position = vec4(position, 0.0, 1.0);
-        }
-    </script>
+<div class="container">
+  <header>
+    <div class="label">// 捷徑觸發器 v1.0</div>
+    <h1>Shortcut<br><span>Trigger</span></h1>
+    <p class="subtitle">點擊按鈕直接觸發 iOS 捷徑<br>需在 iPhone Safari 中開啟</p>
+  </header>
 
-    <script id="fs" type="x-shader/x-fragment">
-        precision highp float;
-        varying vec2 vUv;
-        uniform sampler2D heightMap;
-        uniform vec2 resolution;
+  <div class="status-bar">
+    <div class="dot"></div>
+    <span>已就緒 — 等待觸發指令</span>
+  </div>
 
-        float random(vec2 st) {
-            return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-        }
+  <div class="btn-grid">
 
-        void main() {
-            vec2 st = vUv;
-            float h = texture2D(heightMap, st).r;
-            float step = 1.5 / 512.0; 
-            float hL = texture2D(heightMap, st - vec2(step, 0.0)).r;
-            float hR = texture2D(heightMap, st + vec2(step, 0.0)).r;
-            float hD = texture2D(heightMap, st - vec2(0.0, step)).r;
-            float hU = texture2D(heightMap, st + vec2(0.0, step)).r;
+    <button class="btn" onclick="trigger('測試捷徑觸發', 'yellow')">
+      <div class="btn-info">
+        <div class="btn-name">觸發捷徑</div>
+        <div class="btn-desc">執行「測試捷徑觸發」</div>
+      </div>
+      <div class="btn-icon">⚡</div>
+    </button>
 
-            vec3 normal = normalize(vec3((hL - hR) * 10.0, (hD - hU) * 10.0, 1.0));
-            vec3 lightDir = normalize(vec3(0.5, 0.7, 0.6));
-            float diff = max(dot(normal, lightDir), 0.0);
+    <button class="btn" onclick="trigger('測試捷徑觸發', 'yellow')">
+      <div class="btn-info">
+        <div class="btn-name">觸發捷徑（附輸入）</div>
+        <div class="btn-desc">帶入參數「hello」執行</div>
+      </div>
+      <div class="btn-icon">📥</div>
+    </button>
 
-            vec3 sandColor = vec3(0.98, 0.97, 0.94);
-            vec3 deepColor = vec3(0.78, 0.74, 0.68);
+    <button class="btn red" onclick="triggerWithInput('測試捷徑觸發', prompt('輸入參數：'), 'red')">
+      <div class="btn-info">
+        <div class="btn-name">自訂參數觸發</div>
+        <div class="btn-desc">手動輸入參數後執行</div>
+      </div>
+      <div class="btn-icon">✏️</div>
+    </button>
 
-            vec3 color = mix(deepColor, sandColor, diff);
-            float noise = random(st * resolution * 2.5);
-            color *= (0.96 + noise * 0.08);
+    <button class="btn blue" onclick="triggerWithInput('測試捷徑觸發', 'hello', 'blue')">
+      <div class="btn-info">
+        <div class="btn-name">帶參數觸發</div>
+        <div class="btn-desc">帶入「hello」執行捷徑</div>
+      </div>
+      <div class="btn-icon">🔵</div>
+    </button>
 
-            float ao = smoothstep(0.3, 0.7, h);
-            color *= (0.85 + ao * 0.15);
+  </div>
 
-            gl_FragColor = vec4(color, 1.0);
-        }
-    </script>
+  <footer>
+    捷徑名稱：<code>測試捷徑觸發</code><br>
+    使用 <code>shortcuts://run-shortcut</code> URL Scheme
+  </footer>
+</div>
 
-    <script>
-        const canvas = document.getElementById('sandCanvas');
-        const gl = canvas.getContext('webgl');
-        const size = 512;
-        let heightData = new Uint8Array(size * size);
-        let heightMapTexture, program;
+<div class="toast" id="toast"></div>
 
-        // 使用更精確的尺寸更新
-        function resizeCanvas() {
-            // 使用視窗實際像素解析度，並考慮 Device Pixel Ratio 以提升精細度
-            const dpr = window.devicePixelRatio || 1;
-            canvas.width = window.innerWidth * dpr;
-            canvas.height = window.innerHeight * dpr;
-            gl.viewport(0, 0, canvas.width, canvas.height);
-            
-            if (program) {
-                gl.useProgram(program);
-                gl.uniform2f(gl.getUniformLocation(program, 'resolution'), canvas.width, canvas.height);
-            }
-        }
+<script>
+  function showToast(msg, color = 'yellow') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast';
+    if (color === 'red') toast.classList.add('red');
+    if (color === 'blue') toast.classList.add('blue');
+    requestAnimationFrame(() => {
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    });
+  }
 
-        function init() {
-            window.addEventListener('resize', resizeCanvas);
-            resizeCanvas();
+  function trigger(name, color = 'yellow') {
+    const url = `shortcuts://run-shortcut?name=${encodeURIComponent(name)}`;
+    showToast(`⚡ 觸發中：${name}`, color);
+    setTimeout(() => { window.location.href = url; }, 300);
+  }
 
-            for(let i=0; i<heightData.length; i++) {
-                heightData[i] = 100 + Math.random() * 10; 
-            }
-            
-            program = createProgram(document.getElementById('vs').text, document.getElementById('fs').text);
-            gl.useProgram(program);
-            setupGeometry();
-            updateTexture();
-            render();
-        }
+  function triggerWithInput(name, input, color = 'yellow') {
+    if (!input) return;
+    const url = `shortcuts://run-shortcut?name=${encodeURIComponent(name)}&input=${encodeURIComponent(input)}`;
+    showToast(`⚡ 觸發中：${name}`, color);
+    setTimeout(() => { window.location.href = url; }, 300);
+  }
+</script>
 
-        // --- 物理與渲染邏輯維持之前的滿意版本 ---
-        function deformSand(x, y) {
-            // 考慮 DPR 的座標轉換
-            const u = x / window.innerWidth;
-            const v = 1.0 - (y / window.innerHeight);
-            const cx = Math.floor(u * size), cy = Math.floor(v * size);
-            const r = 22; 
-            let displaced = 0;
-
-            for(let iy=-r; iy<=r; iy++) {
-                for(let ix=-r; ix<=r; ix++) {
-                    const gx = cx+ix, gy = cy+iy;
-                    if(gx>=0 && gx<size && gy>=0 && gy<size) {
-                        const d = Math.sqrt(ix*ix + iy*iy);
-                        if(d < r) {
-                            const idx = gy*size + gx;
-                            const currentH = heightData[idx];
-                            const pull = (1.0 - d/r) * 20.0 * (currentH / 255.0); 
-                            heightData[idx] = Math.max(30, heightData[idx] - pull);
-                            displaced += pull;
-                        }
-                    }
-                }
-            }
-
-            const pr = r * 1.5; 
-            const pushStrength = (displaced / (pr * pr)) * 1.2; 
-            for(let iy=-pr; iy<=pr; iy++) {
-                for(let ix=-pr; ix<=pr; ix++) {
-                    const gx = cx+ix, gy = cy+iy;
-                    if(gx>=0 && gx<size && gy>=0 && gy<size) {
-                        const d = Math.sqrt(ix*ix + iy*iy);
-                        if(d > r * 0.8 && d < pr) {
-                            const idx = gy*size + gx;
-                            const heap = (1.0 - Math.abs(d - (r + pr)/2.0) / (pr - r)) * pushStrength;
-                            heightData[idx] = Math.min(255, heightData[idx] + heap);
-                        }
-                    }
-                }
-            }
-            updateTexture();
-        }
-
-        function updateTexture() {
-            if(heightMapTexture) gl.deleteTexture(heightMapTexture);
-            heightMapTexture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, heightMapTexture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, size, size, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, heightData);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        }
-
-        function setupGeometry() {
-            const pos = new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]);
-            const uv = new Float32Array([0,0, 1,0, 0,1, 0,1, 1,0, 1,1]);
-            createBuf(pos, 'position', 2);
-            createBuf(uv, 'uv', 2);
-            gl.uniform2f(gl.getUniformLocation(program, 'resolution'), canvas.width, canvas.height);
-        }
-
-        function createBuf(data, name, size) {
-            const buf = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-            gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-            const loc = gl.getAttribLocation(program, name);
-            gl.enableVertexAttribArray(loc);
-            gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
-        }
-
-        function createProgram(v, f) {
-            const vs = gl.createShader(gl.VERTEX_SHADER);
-            gl.shaderSource(vs, v); gl.compileShader(vs);
-            const fs = gl.createShader(gl.FRAGMENT_SHADER);
-            gl.shaderSource(fs, f); gl.compileShader(fs);
-            const p = gl.createProgram();
-            gl.attachShader(p, vs); gl.attachShader(p, fs); gl.linkProgram(p);
-            return p;
-        }
-
-        let drawing = false;
-        const handleInput = e => {
-            const x = e.touches ? e.touches[0].clientX : e.clientX;
-            const y = e.touches ? e.touches[0].clientY : e.clientY;
-            deformSand(x, y);
-        };
-        canvas.addEventListener('touchstart', e => { drawing = true; handleInput(e); }, {passive: false});
-        canvas.addEventListener('touchmove', e => { if(drawing) { e.preventDefault(); handleInput(e); } }, {passive: false});
-        window.addEventListener('touchend', () => drawing = false);
-        canvas.addEventListener('mousedown', e => { drawing = true; handleInput(e); });
-        canvas.addEventListener('mousemove', e => { if(drawing) handleInput(e); });
-        window.addEventListener('mouseup', () => drawing = false);
-
-        function render() {
-            gl.clear(gl.COLOR_BUFFER_BIT);
-            gl.bindTexture(gl.TEXTURE_2D, heightMapTexture);
-            gl.drawArrays(gl.TRIANGLES, 0, 6);
-            requestAnimationFrame(render);
-        }
-        init();
-    </script>
 </body>
 </html>
