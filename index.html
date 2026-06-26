@@ -28,23 +28,26 @@
       -webkit-user-select: none;
     }
 
-    /* phone frame — centered on desktop, full-bleed on mobile */
+    /* phone frame — full-bleed on mobile (fills the whole screen, no black gaps),
+       centered framed mockup on desktop */
     .phone {
-      position: relative;
+      position: fixed;
+      inset: 0;
       width: 100%;
-      max-width: 430px;
-      height: 100vh;
-      height: 100dvh; /* 全螢幕 Web App 用動態視窗高度，避免被工具列影響 */
-      max-height: 932px;
-      margin: 0 auto;
+      height: 100%;
       overflow: hidden;
       background: #000;
-      border-radius: 0;
     }
     @media (min-width: 460px) {
-      body { display: flex; align-items: center; justify-content: center; }
+      body { display: flex; align-items: center; justify-content: center; background: #000; }
       .phone {
+        position: relative;
+        inset: auto;
+        width: 100%;
+        max-width: 430px;
         height: 90vh;
+        max-height: 900px;
+        margin: 0 auto;
         border-radius: 48px;
         box-shadow: 0 0 0 12px #1a1a1a, 0 20px 60px rgba(0,0,0,0.6);
       }
@@ -62,49 +65,11 @@
       will-change: transform, opacity;
     }
 
-    /* ---------- status bar ---------- */
-    .statusbar {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: calc(54px + env(safe-area-inset-top));
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      /* 全螢幕模式下避開瀏海/動態島的安全區域 */
-      padding: max(14px, env(safe-area-inset-top)) 28px 0;
-      font-size: 16px;
-      font-weight: 600;
-      z-index: 5;
-      pointer-events: none;
-    }
-    .sb-time { letter-spacing: 0.3px; min-width: 54px; }
-
-    /* dynamic island (static visual) with lock + faceid beside it */
-    .sb-center {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transform: translateX(-6px);
-    }
-    .island {
-      width: 92px;
-      height: 30px;
-      background: #000;
-      border-radius: 18px;
-    }
-    .sb-center svg { width: 16px; height: 16px; opacity: 0.95; }
-
-    .sb-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .sb-right svg { display: block; }
-
-    /* ---------- initial lock screen ---------- */
+    /* ---------- initial lock screen ----------
+       不自行繪製頂部狀態列，直接沿用 iOS 系統真實狀態列（足以以假亂真）。 */
     #initial .clock-wrap {
       position: absolute;
-      top: 78px;
+      top: calc(env(safe-area-inset-top) + 24px);
       left: 0; right: 0;
       text-align: center;
     }
@@ -125,7 +90,7 @@
 
     .corner-btns {
       position: absolute;
-      bottom: 54px;
+      bottom: calc(env(safe-area-inset-bottom) + 54px);
       left: 0; right: 0;
       display: flex;
       justify-content: space-between;
@@ -143,7 +108,7 @@
 
     .swipe-hint {
       position: absolute;
-      bottom: 14px;
+      bottom: calc(env(safe-area-inset-bottom) + 14px);
       left: 0; right: 0;
       text-align: center;
     }
@@ -185,7 +150,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 96px;
+      margin-top: calc(env(safe-area-inset-top) + 56px);
       flex: 1;
     }
 
@@ -264,7 +229,7 @@
       width: 100%;
       display: flex;
       justify-content: space-between;
-      padding: 22px 44px 22px;
+      padding: 22px 44px calc(env(safe-area-inset-bottom) + 22px);
       font-size: 16px;
       font-weight: 400;
     }
@@ -283,7 +248,7 @@
     }
     .app-grid {
       position: absolute;
-      top: 86px;
+      top: calc(env(safe-area-inset-top) + 40px);
       left: 0; right: 0;
       padding: 0 26px;
       display: grid;
@@ -312,7 +277,7 @@
     .dock {
       position: absolute;
       left: 14px; right: 14px;
-      bottom: 24px;
+      bottom: calc(env(safe-area-inset-bottom) + 16px);
       height: 92px;
       border-radius: 34px;
       background: rgba(255,255,255,0.22);
@@ -338,8 +303,6 @@
 
   <!-- ============ 0. INITIAL LOCK SCREEN ============ -->
   <section class="screen" id="initial">
-    <div class="statusbar"></div>
-
     <div class="clock-wrap">
       <div class="date" id="date-initial">—</div>
       <div class="big-clock" id="clock-initial">--:--</div>
@@ -362,8 +325,6 @@
 
   <!-- ============ 1. PASSCODE SCREEN ============ -->
   <section class="screen" id="passcode">
-    <div class="statusbar"></div>
-
     <div class="passcode-inner">
       <div class="lock-glyph">
         <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm3 8H9V6a3 3 0 0 1 6 0v3z"/></svg>
@@ -381,8 +342,6 @@
 
   <!-- ============ 2. FAKE HOME SCREEN ============ -->
   <section class="screen" id="home">
-    <div class="statusbar"></div>
-
     <div class="app-grid">
       <div class="app"><img src="images/icon-calculator.png" alt="計算機"><span>計算機</span></div>
       <div class="app"><img src="images/icon-photos.png" alt="照片"><span>照片</span></div>
@@ -404,46 +363,11 @@
   /* ===== config ===== */
   const PASSCODE_LENGTH = 4; // 未來改密碼長度只改這裡
 
-  /* ===== status bar markup (shared, injected into every screen) ===== */
-  const statusBarHTML = `
-    <div class="sb-time" data-clock>--:--</div>
-    <div class="sb-center">
-      <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 1a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-1V6a5 5 0 0 0-5-5zm3 8H9V6a3 3 0 0 1 6 0v3z"/></svg>
-      <div class="island"></div>
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6">
-        <path d="M3 8V5a2 2 0 0 1 2-2h3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M21 16v3a2 2 0 0 1-2 2h-3"/>
-        <path d="M7 9.5v5M12 8v8M17 9.5v5" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="sb-right">
-      <!-- cellular -->
-      <svg width="18" height="13" viewBox="0 0 18 13" fill="#fff">
-        <rect x="0"  y="8"  width="3" height="5"  rx="1"/>
-        <rect x="5"  y="5.5" width="3" height="7.5" rx="1"/>
-        <rect x="10" y="3"  width="3" height="10" rx="1"/>
-        <rect x="15" y="0.5" width="3" height="12.5" rx="1"/>
-      </svg>
-      <!-- wifi -->
-      <svg width="18" height="13" viewBox="0 0 18 13" fill="#fff">
-        <path d="M9 2.2c2.9 0 5.6 1.1 7.6 3l-1.5 1.6A8.6 8.6 0 0 0 9 4.3 8.6 8.6 0 0 0 2.9 6.8L1.4 5.2A11 11 0 0 1 9 2.2z"/>
-        <path d="M9 6.4c1.7 0 3.3.7 4.5 1.8l-1.6 1.6A4.2 4.2 0 0 0 9 8.5c-1.1 0-2.1.4-2.9 1.3L4.5 8.2A6.4 6.4 0 0 1 9 6.4z"/>
-        <circle cx="9" cy="11.4" r="1.5"/>
-      </svg>
-      <!-- battery -->
-      <svg width="27" height="13" viewBox="0 0 27 13" fill="none">
-        <rect x="0.5" y="0.5" width="22" height="12" rx="3.5" stroke="#fff" stroke-opacity="0.45"/>
-        <rect x="2.5" y="2.5" width="18" height="8" rx="2" fill="#fff"/>
-        <path d="M24.5 4.2c1 .3 1 4.3 0 4.6V4.2z" fill="#fff" fill-opacity="0.6"/>
-      </svg>
-    </div>`;
-  document.querySelectorAll('.statusbar').forEach(el => el.innerHTML = statusBarHTML);
-
-  /* ===== live clock + date ===== */
+  /* ===== live clock + date (鎖屏大時鐘，沿用系統頂部狀態列) ===== */
   function pad(n){ return String(n).padStart(2,'0'); }
   function updateClock(){
     const now = new Date();
     const t = pad(now.getHours()) + ':' + pad(now.getMinutes());
-    document.querySelectorAll('[data-clock]').forEach(el => el.textContent = t);
     const bc = document.getElementById('clock-initial');
     if (bc) bc.textContent = t;
     const days = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
