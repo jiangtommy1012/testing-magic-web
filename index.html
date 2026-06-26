@@ -2,8 +2,16 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>iPhone</title>
+
+  <!-- 加到主畫面後以全螢幕 Web App 開啟，隱藏 Safari 的網址列與工具列 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="iPhone">
+  <link rel="apple-touch-icon" href="images/icon-appstore.png">
+  <link rel="manifest" href="manifest.json">
   <style>
     :root {
       --wallpaper: url('images/wallpaper.jpg');
@@ -26,6 +34,7 @@
       width: 100%;
       max-width: 430px;
       height: 100vh;
+      height: 100dvh; /* 全螢幕 Web App 用動態視窗高度，避免被工具列影響 */
       max-height: 932px;
       margin: 0 auto;
       overflow: hidden;
@@ -57,11 +66,12 @@
     .statusbar {
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 54px;
+      height: calc(54px + env(safe-area-inset-top));
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 28px 0;
+      /* 全螢幕模式下避開瀏海/動態島的安全區域 */
+      padding: max(14px, env(safe-area-inset-top)) 28px 0;
       font-size: 16px;
       font-weight: 600;
       z-index: 5;
