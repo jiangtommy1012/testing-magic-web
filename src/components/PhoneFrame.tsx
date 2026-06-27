@@ -12,16 +12,15 @@ export default function PhoneFrame({ children }: { children: ReactNode }) {
   return (
     <Box
       sx={{
+        // 用 inset:0 把四個邊都釘住，bottom:0 直接貼到螢幕真正的底部，
+        // 比用 height:100dvh 更可靠（避免 dvh 算短時底部露黑）。
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '100dvh',
+        inset: 0,
         overflow: 'hidden',
         bgcolor: '#000',
         '@media (min-width:460px)': {
           position: 'relative',
-          top: 'auto',
+          inset: 'auto',
           height: '90dvh',
           maxHeight: 900,
           width: '100%',
