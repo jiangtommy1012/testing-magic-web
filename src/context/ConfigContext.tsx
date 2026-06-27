@@ -16,14 +16,17 @@ export interface Config {
   apps: AppIcon[];
 }
 
+// 加上 Vite 的 base 前綴，讓資源路徑在本機（/）與 GitHub Pages（/testing-magic-web/）都正確
+const asset = (p: string) => `${import.meta.env.BASE_URL}${p}`;
+
 const defaultConfig: Config = {
   passcodeLength: 4, // 未來改密碼長度只改這裡
-  wallpaper: '/images/wallpaper.jpg',
+  wallpaper: asset('images/wallpaper.jpg'),
   apps: [
-    { name: '計算機', icon: '/images/icon-calculator.png' },
-    { name: '照片', icon: '/images/icon-photos.png' },
-    { name: '設定', icon: '/images/icon-setting.png' },
-    { name: 'App Store', icon: '/images/icon-appstore.png' },
+    { name: '計算機', icon: asset('images/icon-calculator.png') },
+    { name: '照片', icon: asset('images/icon-photos.png') },
+    { name: '設定', icon: asset('images/icon-setting.png') },
+    { name: 'App Store', icon: asset('images/icon-appstore.png') },
   ],
 };
 
