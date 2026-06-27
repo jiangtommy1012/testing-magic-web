@@ -95,21 +95,19 @@ export default function InitialScreen() {
         ))}
       </Stack>
 
-      {/* 上滑提示 + home indicator（純視覺，不攔截點擊，否則會擋住角落按鈕） */}
+      {/* home indicator（純視覺，貼著螢幕底部、留一點 padding，不攔截點擊） */}
       <Box
         sx={{
           position: 'absolute',
           left: 0,
           right: 0,
-          bottom: 'calc(env(safe-area-inset-bottom) + 14px)',
-          textAlign: 'center',
+          bottom: 'max(8px, calc(env(safe-area-inset-bottom) - 22px))',
+          display: 'flex',
+          justifyContent: 'center',
           pointerEvents: 'none',
         }}
       >
-        <Typography sx={{ fontSize: 12, opacity: 0.7, mb: '14px', letterSpacing: '0.4px' }}>
-          向上滑動以解鎖
-        </Typography>
-        <Box sx={{ width: 134, height: 5, borderRadius: '3px', bgcolor: '#fff', opacity: 0.9, mx: 'auto' }} />
+        <Box sx={{ width: 134, height: 5, borderRadius: '3px', bgcolor: '#fff', opacity: 0.9 }} />
       </Box>
     </Box>
   );
