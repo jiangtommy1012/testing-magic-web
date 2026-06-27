@@ -3,8 +3,9 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import FlashlightOnRounded from '@mui/icons-material/FlashlightOnRounded';
 import PhotoCameraRounded from '@mui/icons-material/PhotoCameraRounded';
+import type { PointerEvent } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { showPasscode } from '../features/lock/lockSlice';
+import { showPasscode, turnScreenOff } from '../features/lock/lockSlice';
 import { useClock } from '../hooks/useClock';
 import { useSwipeUp } from '../hooks/useSwipeUp';
 
@@ -49,7 +50,8 @@ export default function InitialScreen() {
         </Typography>
       </Box>
 
-      {/* 角落：手電筒 / 相機（純視覺） */}
+      {/* 角落：手電筒 / 相機。手電筒點了會熄屏，相機純視覺。
+          stopPropagation 避免點按鈕被外層上滑手勢當成點擊而解鎖。 */}
       <Stack
         direction="row"
         justifyContent="space-between"
@@ -57,31 +59,43 @@ export default function InitialScreen() {
           position: 'absolute',
           left: 0,
           right: 0,
-          bottom: 'calc(env(safe-area-inset-bottom) + 54px)',
-          px: '38px',
+          bottom: 'calc(env(safe-area-inset-bottom) + 18px)',
+          px: '36px',
         }}
       >
-        {[FlashlightOnRounded, PhotoCameraRounded].map((Icon, i) => (
+        {[
+          { Icon: FlashlightOnRounded, onClick: () => dispatch(turnScreenOff()) },
+          { Icon: PhotoCameraRounded, onClick: undefined },
+        ].map(({ Icon, onClick }, i) => (
           <Box
             key={i}
+            onPointerDown={(e: PointerEvent) => e.stopPropagation()}
+            onPointerUp={(e: PointerEvent) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick?.();
+            }}
             sx={{
-              width: 48,
-              height: 48,
+              width: 66,
+              height: 66,
               borderRadius: '50%',
-              bgcolor: 'rgba(0,0,0,0.28)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
+              bgcolor: 'rgba(255,255,255,0.18)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'transform 0.1s ease',
+              '&:active': { transform: 'scale(0.92)' },
             }}
           >
-            <Icon sx={{ fontSize: 22 }} />
+            <Icon sx={{ fontSize: 30 }} />
           </Box>
         ))}
       </Stack>
 
-      {/* 上滑提示 + home indicator */}
+      {/* 上滑提示 + home indicator（純視覺，不攔截點擊，否則會擋住角落按鈕） */}
       <Box
         sx={{
           position: 'absolute',
@@ -89,6 +103,7 @@ export default function InitialScreen() {
           right: 0,
           bottom: 'calc(env(safe-area-inset-bottom) + 14px)',
           textAlign: 'center',
+          pointerEvents: 'none',
         }}
       >
         <Typography sx={{ fontSize: 12, opacity: 0.7, mb: '14px', letterSpacing: '0.4px' }}>

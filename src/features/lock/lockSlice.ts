@@ -10,12 +10,15 @@ export interface LockState {
   input: string;
   /** 過渡期間鎖住輸入，避免重複觸發 */
   locked: boolean;
+  /** 螢幕是否熄滅（點手電筒後蓋一層全黑，點一下回到原畫面） */
+  screenOff: boolean;
 }
 
 const initialState: LockState = {
   screen: 'initial',
   input: '',
   locked: false,
+  screenOff: false,
 };
 
 const lockSlice = createSlice({
@@ -49,6 +52,14 @@ const lockSlice = createSlice({
       state.input = '';
       state.locked = false;
     },
+    /** 熄滅螢幕（蓋上全黑層） */
+    turnScreenOff(state) {
+      state.screenOff = true;
+    },
+    /** 點黑屏任一處 → 回到原本的畫面 */
+    turnScreenOn(state) {
+      state.screenOff = false;
+    },
     /** 回到初始鎖屏（全部重置） */
     reset() {
       return initialState;
@@ -56,6 +67,14 @@ const lockSlice = createSlice({
   },
 });
 
-export const { showPasscode, addDigit, clearInput, setLocked, unlock, reset } =
-  lockSlice.actions;
+export const {
+  showPasscode,
+  addDigit,
+  clearInput,
+  setLocked,
+  unlock,
+  turnScreenOff,
+  turnScreenOn,
+  reset,
+} = lockSlice.actions;
 export default lockSlice.reducer;
