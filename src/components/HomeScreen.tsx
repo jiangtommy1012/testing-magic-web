@@ -7,7 +7,7 @@ import { useConfig } from '../context/ConfigContext';
 /** 假桌面：app 圖示網格 + 底部 Dock */
 export default function HomeScreen() {
   const screen = useAppSelector((s) => s.lock.screen);
-  const { wallpaper, apps } = useConfig();
+  const { apps } = useConfig();
   const active = screen === 'home';
 
   return (
@@ -15,11 +15,8 @@ export default function HomeScreen() {
       sx={{
         position: 'absolute',
         inset: 0,
-        backgroundImage: `url(${wallpaper})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
         color: '#fff',
-        // 解鎖時從稍微放大淡入，模擬 iOS 進桌面
+        // 壁紙是底下的靜態圖層；解鎖時前景（圖示/Dock）從稍微放大淡入，模擬 iOS 進桌面
         transform: active ? 'scale(1)' : 'scale(1.15)',
         opacity: active ? 1 : 0,
         pointerEvents: active ? 'auto' : 'none',

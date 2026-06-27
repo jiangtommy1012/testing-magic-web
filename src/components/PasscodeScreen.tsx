@@ -15,7 +15,7 @@ export default function PasscodeScreen() {
   const dispatch = useAppDispatch();
   const screen = useAppSelector((s) => s.lock.screen);
   const input = useAppSelector((s) => s.lock.input);
-  const { passcodeLength, wallpaper } = useConfig();
+  const { passcodeLength } = useConfig();
 
   // 副作用：輸滿最後一位時複製並解鎖
   useEffect(() => {
@@ -29,40 +29,31 @@ export default function PasscodeScreen() {
     return () => clearTimeout(id);
   }, [input, passcodeLength, dispatch]);
 
-  // 在三個畫面間的位置：initial 時在下方待命、passcode 時就位、home 時往上滑出
-  const transform =
-    screen === 'passcode'
-      ? 'translateY(0)'
-      : screen === 'home'
-        ? 'translateY(-100%)'
-        : 'translateY(100%)';
+  const active = screen === 'passcode';
 
   return (
     <Box
       sx={{
         position: 'absolute',
         inset: 0,
-        backgroundImage: `url(${wallpaper})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
         color: '#fff',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        transform,
-        opacity: screen === 'home' ? 0 : 1,
-        transition: 'transform 0.45s cubic-bezier(0.22,1,0.36,1), opacity 0.45s ease',
+        // 壁紙是底下的靜態圖層；這層只淡入前景，鍵盤略微上升
+        opacity: active ? 1 : 0,
+        transform: active ? 'translateY(0)' : 'translateY(24px)',
+        pointerEvents: active ? 'auto' : 'none',
+        transition: 'opacity 0.4s ease, transform 0.45s cubic-bezier(0.22,1,0.36,1)',
         zIndex: 2,
       }}
     >
-      {/* 變暗 + 模糊的遮罩，讓鍵盤更清楚 */}
+      {/* 變暗遮罩讓鍵盤更清楚（不用 backdrop-filter，避免 iOS 動畫時閃爍） */}
       <Box
         sx={{
           position: 'absolute',
           inset: 0,
-          bgcolor: 'rgba(0,0,0,0.18)',
-          backdropFilter: 'blur(2px)',
-          WebkitBackdropFilter: 'blur(2px)',
+          bgcolor: 'rgba(0,0,0,0.3)',
         }}
       />
 
