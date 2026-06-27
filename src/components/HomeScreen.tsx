@@ -68,7 +68,9 @@ export default function HomeScreen() {
           position: 'absolute',
           left: 14,
           right: 14,
-          bottom: 'calc(env(safe-area-inset-bottom) + 16px)',
+          // 真實 iOS 的 Dock 會坐進底部安全區（home indicator 那一帶），
+          // 而不是浮在它上面，所以用 inset 再往下一點。
+          bottom: 'max(12px, calc(env(safe-area-inset-bottom) - 12px))',
           height: 92,
           px: '18px',
           borderRadius: '34px',
