@@ -2,15 +2,15 @@
   "name": "iPhone",
   "short_name": "iPhone",
   "description": "仿 iPhone 鎖屏解鎖頁面",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "images/icon-appstore.png",
+      "src": "/images/icon-appstore.png",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
