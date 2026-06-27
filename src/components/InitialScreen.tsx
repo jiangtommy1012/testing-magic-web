@@ -5,7 +5,6 @@ import FlashlightOnRounded from '@mui/icons-material/FlashlightOnRounded';
 import PhotoCameraRounded from '@mui/icons-material/PhotoCameraRounded';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { showPasscode } from '../features/lock/lockSlice';
-import { useConfig } from '../context/ConfigContext';
 import { useClock } from '../hooks/useClock';
 import { useSwipeUp } from '../hooks/useSwipeUp';
 
@@ -13,9 +12,9 @@ import { useSwipeUp } from '../hooks/useSwipeUp';
 export default function InitialScreen() {
   const dispatch = useAppDispatch();
   const screen = useAppSelector((s) => s.lock.screen);
-  const { wallpaper } = useConfig();
   const { time, date } = useClock();
   const swipe = useSwipeUp(() => dispatch(showPasscode()));
+  const active = screen === 'initial';
 
   return (
     <Box
@@ -23,15 +22,13 @@ export default function InitialScreen() {
       sx={{
         position: 'absolute',
         inset: 0,
-        backgroundImage: `url(${wallpaper})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
         color: '#fff',
         touchAction: 'none',
-        // 初始畫面在 'initial' 時可見，切走後往上滑出
-        transform: screen === 'initial' ? 'translateY(0)' : 'translateY(-100%)',
-        opacity: screen === 'initial' ? 1 : 0,
-        transition: 'transform 0.45s cubic-bezier(0.22,1,0.36,1), opacity 0.45s ease',
+        // 壁紙是底下的靜態圖層，這層只放前景；離開時前景往上飄並淡出
+        transform: active ? 'translateY(0)' : 'translateY(-40px)',
+        opacity: active ? 1 : 0,
+        pointerEvents: active ? 'auto' : 'none',
+        transition: 'transform 0.45s cubic-bezier(0.22,1,0.36,1), opacity 0.4s ease',
         zIndex: 1,
       }}
     >
